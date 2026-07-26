@@ -3,6 +3,8 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { UsersModule } from './user/users.module';
+import { ResumeModule } from './resume/resume.module';
+import { InternshipModule } from './internship/internship.module';
 
 @Module({
   imports: [
@@ -11,12 +13,14 @@ import { UsersModule } from './user/users.module';
       host: 'localhost',
       port: 5432,
       username: 'postgres',
-      password: '1234', 
+      password: 'alfaz', 
       database: 'internnova_db',
       autoLoadEntities: true,
       synchronize: true,
     }),
     UsersModule,
+    ResumeModule,
+    InternshipModule,
   ],
   controllers: [AppController],
   providers: [AppService],
