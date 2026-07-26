@@ -5,6 +5,7 @@ import { AppService } from './app.service';
 import { UsersModule } from './user/users.module';
 import { ResumeModule } from './resume/resume.module';
 import { InternshipModule } from './internship/internship.module';
+import { CompanyModule } from './company/company.module';
 
 @Module({
   imports: [
@@ -13,7 +14,7 @@ import { InternshipModule } from './internship/internship.module';
       host: 'localhost',
       port: 5432,
       username: 'postgres',
-      password: 'alfaz', 
+      password: 'admin123', 
       database: 'internnova_db',
       autoLoadEntities: true,
       synchronize: true,
@@ -21,6 +22,7 @@ import { InternshipModule } from './internship/internship.module';
     UsersModule,
     ResumeModule,
     InternshipModule,
+    CompanyModule,
   ],
   controllers: [AppController],
   providers: [AppService],
