@@ -1,4 +1,13 @@
-import { Column, CreateDateColumn, Entity, UpdateDateColumn, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  Column,
+  CreateDateColumn,
+  Entity,
+  UpdateDateColumn,
+  PrimaryGeneratedColumn,
+  ManyToOne,
+  JoinColumn,
+} from 'typeorm';
+import { Company } from '../../company/entities/company.entity';
 
 @Entity()
 export class Internship {
@@ -8,36 +17,35 @@ export class Internship {
   @Column({
     type: 'varchar',
     length: 150,
-    unique: false,
     nullable: false,
   })
   title: string;
 
   @Column({
     type: 'text',
-    unique: false,
     nullable: false,
   })
   description: string;
 
   @Column({
     type: 'text',
-    unique: false,
     nullable: false,
   })
   requirements: string;
 
   @Column({
     type: 'boolean',
-    unique: false,
-    nullable: false,
     default: true,
   })
   isActive: boolean;
 
   @CreateDateColumn()
-  createDate: Date;
+  createdAt: Date;
 
   @UpdateDateColumn()
-  updateDate: Date;
+  updatedAt: Date;
+
+  @ManyToOne(() => Company, (company) => company.internships)
+  @JoinColumn({ name: 'companyId' })
+  company: Company;
 }

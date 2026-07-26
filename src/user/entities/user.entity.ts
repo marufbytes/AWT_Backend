@@ -1,5 +1,6 @@
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, DeleteDateColumn, OneToMany } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, DeleteDateColumn, OneToMany, JoinColumn, ManyToOne } from 'typeorm';
 import { Resume } from '../../resume/entities/resume.entity';
+import { Company } from '../../company/entities/company.entity';
 
 
 export enum UserRole {
@@ -37,6 +38,10 @@ export class User {
 
   @Column({ nullable: true })
   hashedRefreshToken: string;
+
+  @ManyToOne(() => Company, (company) => company.users, { nullable: true })
+  @JoinColumn({ name: 'companyId' })
+  company: Company;
 
   // RELATIONS (Commented out for now until we build the other modules)
   // @ManyToOne(() => Company, company => company.users, { nullable: true })
