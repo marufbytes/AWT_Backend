@@ -1,7 +1,11 @@
 import {
-  Column, Entity, ManyToOne, OneToMany,
-  PrimaryGeneratedColumn, JoinColumn,
-  CreateDateColumn, UpdateDateColumn,
+  Column,
+  CreateDateColumn,
+  Entity,
+  UpdateDateColumn,
+  PrimaryGeneratedColumn,
+  ManyToOne,
+  JoinColumn,
 } from 'typeorm';
 import { Company } from '../../company/entities/company.entity';
 
@@ -10,16 +14,29 @@ export class Internship {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column({ type: 'varchar', length: 150 })
+  @Column({
+    type: 'varchar',
+    length: 150,
+    nullable: false,
+  })
   title: string;
 
-  @Column({ type: 'text' })
+  @Column({
+    type: 'text',
+    nullable: false,
+  })
   description: string;
 
-  @Column({ type: 'text' })
+  @Column({
+    type: 'text',
+    nullable: false,
+  })
   requirements: string;
 
-  @Column({ default: true })
+  @Column({
+    type: 'boolean',
+    default: true,
+  })
   isActive: boolean;
 
   @CreateDateColumn()
@@ -31,10 +48,4 @@ export class Internship {
   @ManyToOne(() => Company, (company) => company.internships)
   @JoinColumn({ name: 'companyId' })
   company: Company;
-
-//   @OneToMany(() => Application, (app) => app.internship)
-//   applications: Application[];
-// 
-
 }
-
