@@ -1,4 +1,6 @@
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, DeleteDateColumn } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, DeleteDateColumn, OneToMany } from 'typeorm';
+import { Resume } from '../../resume/entities/resume.entity';
+
 
 export enum UserRole {
   STUDENT = 'STUDENT',
@@ -39,8 +41,8 @@ export class User {
   // RELATIONS (Commented out for now until we build the other modules)
   // @ManyToOne(() => Company, company => company.users, { nullable: true })
   // company: Company;
-  // @OneToMany(() => Resume, resume => resume.student)
-  // resumes: Resume[];
+  @OneToMany(() => Resume, resume => resume.student)
+  resumes: Resume[];
   // @OneToMany(() => Application, app => app.student)
   // applications: Application[];
 
