@@ -6,6 +6,7 @@ import { UsersModule } from './user/users.module';
 import { ResumeModule } from './resume/resume.module';
 import { InternshipModule } from './internship/internship.module';
 import { CompanyModule } from './company/company.module';
+import { ApplicationModule } from './application/application.module';
 
 @Module({
   imports: [
@@ -23,6 +24,7 @@ import { CompanyModule } from './company/company.module';
     ResumeModule,
     InternshipModule,
     CompanyModule,
+    ApplicationModule,
   ],
   controllers: [AppController],
   providers: [AppService],

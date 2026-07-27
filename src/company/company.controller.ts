@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, ParseIntPipe } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, ParseIntPipe, Query } from '@nestjs/common';
 import { CompanyService } from './company.service';
 import { CreateCompanyDto } from './dto/create-company.dto';
 import { UpdateCompanyDto } from './dto/update-company.dto';
@@ -10,13 +10,20 @@ export class CompanyController {
 
   @Post()
   create(@Body() dto: CreateCompanyDto) {
-    return this.companyService.create(dto);
+
+    return this.companyService.createCompany(dto);
+
   }
 
   @Get()
-  findAll() {
-    return this.companyService.findAll();
+  findAllCompany(
+    @Query('companyName') companyName?: string,
+    @Query('industry') industry?: string,
+    @Query('isVerified') isVerified?: string,
+  ) {
+    return this.companyService.findAllCompany(companyName, industry, isVerified);
   }
+
 
   @Get(':id')
   findOne(@Param('id', ParseIntPipe) id: number) {
@@ -39,6 +46,12 @@ export class CompanyController {
   @Delete(':id')
   remove(@Param('id', ParseIntPipe) id: number) {
     return this.companyService.remove(id);
+  }
+
+
+  @Patch(':id/restore')
+  restore(@Param('id', ParseIntPipe) id: number) {
+    return this.companyService.restoreCompany(id);
   }
 
 

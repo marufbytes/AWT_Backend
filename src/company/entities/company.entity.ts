@@ -1,4 +1,4 @@
-import { Column, CreateDateColumn, Entity, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
+import { Column, CreateDateColumn, DeleteDateColumn, Entity, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
 import { Internship } from "../../internship/entities/internship.entity";
 import { User } from "../../user/entities/user.entity";
 
@@ -38,6 +38,9 @@ export class Company {
 
     @UpdateDateColumn()
     updatedAt: Date;
+
+    @DeleteDateColumn()
+    deletedAt:Date;
 
     @OneToMany(() => User, user => user.company)
     users: User[];
