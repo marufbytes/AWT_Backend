@@ -2,7 +2,7 @@ import { BadRequestException, Injectable, NotFoundException } from '@nestjs/comm
 import { CreateCompanyDto } from './dto/create-company.dto';
 import { UpdateCompanyDto } from './dto/update-company.dto';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { ILike, Repository } from 'typeorm';
 import { Company } from './entities/company.entity';
 
 @Injectable()
@@ -13,7 +13,8 @@ export class CompanyService {
     private readonly companyRepo: Repository<Company>
   ) { }
 
-  async create(dto: CreateCompanyDto): Promise<Company> {
+
+  async createCompany(dto: CreateCompanyDto): Promise<Company> {
 
     const exists = await this.companyRepo.findOne({
       where: {
@@ -33,9 +34,25 @@ export class CompanyService {
   }
 
 
-  async findAll(): Promise<Company[]> {
+  async findAllCompany(companyName?: string, industry?: string, isVerified?: string): Promise<Company[]> {
+
+    const where: any = {};
+
+    if (companyName) {
+      where.name = ILike(`%${companyName}%`)
+    }
+
+
+    if (industry) {
+      where.industry = ILike(`%${industry}%`);
+    }
+
+    if (isVerified === 'true' || isVerified === 'false') {
+      where.isVerified = isVerified === 'true';
+    }
 
     return await this.companyRepo.find({
+      where,
       relations: {
         internships: true
       },
@@ -95,12 +112,31 @@ export class CompanyService {
 
 
   async remove(id: number): Promise<{ message: string }> {
-
     await this.findOne(id);
-    await this.companyRepo.delete(id);
+    await this.companyRepo.softDelete(id);
     return {
-      message: `Company with id ${id} deleted successfully`
+      message: `Company with id: ${id} soft deleted successfully`
     };
+  }
+
+  async restoreCompany(id: number): Promise<Company> {
+
+    const company = await this.companyRepo.findOne({
+      where: { id },
+      withDeleted: true,
+    });
+
+    if (!company) {
+      throw new NotFoundException(`Company with id ${id} not found`);
+    }
+
+    if (!company.deletedAt) {
+      throw new BadRequestException('This Company is not deleted!');
+    }
+
+    await this.companyRepo.restore(id);
+    return await this.findOne(id);
+
   }
 
 

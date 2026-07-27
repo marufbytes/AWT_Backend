@@ -6,8 +6,10 @@ import {
   PrimaryGeneratedColumn,
   ManyToOne,
   JoinColumn,
+  OneToMany,
 } from 'typeorm';
 import { Company } from '../../company/entities/company.entity';
+import { Application } from '../../application/entities/application.entity';
 
 @Entity()
 export class Internship {
@@ -48,4 +50,9 @@ export class Internship {
   @ManyToOne(() => Company, (company) => company.internships)
   @JoinColumn({ name: 'companyId' })
   company: Company;
+
+
+  @OneToMany(()=>Application,(app)=>app.internship)
+  applications:Application[];
+
 }

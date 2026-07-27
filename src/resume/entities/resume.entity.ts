@@ -1,5 +1,6 @@
-import { Column, CreateDateColumn, Entity, UpdateDateColumn, PrimaryGeneratedColumn, ManyToOne, JoinColumn } from 'typeorm';
+import { Column, CreateDateColumn, Entity, UpdateDateColumn, PrimaryGeneratedColumn, ManyToOne, JoinColumn, OneToMany } from 'typeorm';
 import { User } from '../../user/entities/user.entity'; 
+import { Application } from '../../application/entities/application.entity';
 
 @Entity()
 export class Resume {
@@ -38,4 +39,8 @@ export class Resume {
   @ManyToOne(() => User, user => user.resumes)
   @JoinColumn()
   student: User; 
+
+  @OneToMany(()=>Application,(app)=>app.resume)
+  applications:Application[];
+  
 }
