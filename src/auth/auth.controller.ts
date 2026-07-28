@@ -11,6 +11,7 @@ import { JwtAuthGuard } from './guards/jwt-auth.guard';
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
+
   @Post('register')
   @UseInterceptors(
     FileInterceptor('profilePicture', {
@@ -40,11 +41,15 @@ export class AuthController {
     return this.authService.register(registerDto);
   }
 
+
+
+
   @Post('login')
   login(@Body() loginDto: LoginDto) {
     return this.authService.login(loginDto);
   }
 
+  ///fetch user data checking guard 
   @UseGuards(JwtAuthGuard)
   @Post('logout')
   logout(@Request() req) {

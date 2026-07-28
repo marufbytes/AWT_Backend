@@ -7,6 +7,10 @@ export class RegisterDto {
   @IsNotEmpty({ message: 'First name is required' })
   firstName: string;
 
+  @IsString()
+  @IsNotEmpty()
+  lastName?: string;
+
   @IsEmail({}, { message: 'Invalid email address' })
   @IsNotEmpty({ message: 'Email is required' })
   email: string;
@@ -20,9 +24,7 @@ export class RegisterDto {
   @IsNotEmpty({ message: 'Role is required' })
   role: UserRole;
 
-  @IsString()
-  @IsNotEmpty()
-  lastName?: string;
+  
 
   @IsString()
   @IsOptional()

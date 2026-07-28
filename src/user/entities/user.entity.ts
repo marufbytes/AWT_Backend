@@ -30,7 +30,8 @@ export class User {
   @Column()
   passwordHash: string;
 
-  @Column({ type: 'enum', enum: UserRole, default: UserRole.STUDENT })
+
+  @Column({ type: 'enum', enum: UserRole })
   role: UserRole;
 
   @Column({ nullable: true })

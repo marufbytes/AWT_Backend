@@ -5,6 +5,7 @@ import { UsersService } from '../user/users.service';
 import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register.dto';
 
+
 @Injectable()
 export class AuthService {
   constructor(
@@ -12,6 +13,7 @@ export class AuthService {
     private readonly jwtService: JwtService,
   ) {}
 
+  // user & pass hash
   async register(registerDto: RegisterDto) {
     const existingUser = await this.usersService.findByEmail(registerDto.email);
     if (existingUser) {
@@ -28,6 +30,8 @@ export class AuthService {
       passwordHash: hashedPassword,
     });
   }
+
+
 
   async login(loginDto: LoginDto) {
     const user = await this.usersService.findByEmail(loginDto.email);
@@ -56,6 +60,9 @@ export class AuthService {
     };
   }
 
+
+
+
   async logout(userId: number) {
     await this.usersService.update(userId, { hashedRefreshToken: null } as any);
     return { message: 'Logged out successfully' };
@@ -66,11 +73,11 @@ export class AuthService {
 
     const [accessToken, refreshToken] = await Promise.all([
       this.jwtService.signAsync(payload, {
-        secret: 'SUPER_SECRET_KEY',
+        secret: 'Access_Token_Key',
         expiresIn: '15m',
       }),
       this.jwtService.signAsync(payload, {
-        secret: 'REFRESH_SECRET_KEY',
+        secret: 'Refresh_TOken_Key',
         expiresIn: '7d',
       }),
     ]);
