@@ -13,8 +13,6 @@ export class AuthService {
     private readonly jwtService: JwtService,
   ) {}
 
-
-
   async register(registerDto: RegisterDto) {
     const existingUser = await this.usersService.findByEmail(registerDto.email);
     if (existingUser) {
