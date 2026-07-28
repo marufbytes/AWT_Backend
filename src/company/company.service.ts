@@ -1,9 +1,10 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { CreateCompanyDto } from './dto/create-company.dto';
 import { UpdateCompanyDto } from './dto/update-company.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { ILike, Repository } from 'typeorm';
 import { Company } from './entities/company.entity';
+import { User, UserRole } from '../user/entities/user.entity';
 
 @Injectable()
 export class CompanyService {
@@ -81,19 +82,15 @@ export class CompanyService {
 
 
 
-  async update(id: number, dto: UpdateCompanyDto): Promise<Company> {
+  async update(id: number, dto: UpdateCompanyDto, user: User): Promise<Company> {
+
     const company = await this.findOne(id);
 
-    if (dto.name && dto.name !== company.name) {
-      const exists = await this.companyRepo.findOne({
-        where: { name: dto.name },
-      });
-
-      if (exists) {
-        throw new BadRequestException(`Company with name ${dto.name} already exists`);
+    if (user.role === UserRole.HR) {
+      if (company.users.find(u => u.id !== user.id)) {
+        throw new ForbiddenException('you can only update your company!');
       }
     }
-
     await this.companyRepo.update(id, dto);
 
     return this.findOne(id);

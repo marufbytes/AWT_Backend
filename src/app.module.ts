@@ -17,7 +17,7 @@ import { InterviewsModule } from './interview/interview.module';
       host: "localhost",
       port: 5432,
       username: "postgres",
-      password: "alfaz",
+      password: "admin123",
       database: "internnova_db",
       autoLoadEntities: true,
       synchronize: true,
