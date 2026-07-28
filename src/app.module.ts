@@ -1,13 +1,14 @@
-import { Module } from "@nestjs/common";
-import { TypeOrmModule } from "@nestjs/typeorm";
-import { AppController } from "./app.controller";
-import { AppService } from "./app.service";
-import { UsersModule } from "./user/users.module";
-import { ResumeModule } from "./resume/resume.module";
-import { InternshipModule } from "./internship/internship.module";
-import { CompanyModule } from "./company/company.module";
-import { ApplicationModule } from "./application/application.module";
-import { AuthModule } from "./auth/auth.module";
+import { Module } from '@nestjs/common';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { AppController } from './app.controller';
+import { AppService } from './app.service';
+import { UsersModule } from './user/users.module';
+import { ResumeModule } from './resume/resume.module';
+import { InternshipModule } from './internship/internship.module';
+import { CompanyModule } from './company/company.module';
+import { ApplicationModule } from './application/application.module';
+import { AuthModule } from './auth/auth.module';
+import { InterviewsModule } from './interview/interview.module';
 
 @Module({
   imports: [
@@ -27,6 +28,7 @@ import { AuthModule } from "./auth/auth.module";
     CompanyModule,
     ApplicationModule,
     AuthModule,
+    InterviewsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
