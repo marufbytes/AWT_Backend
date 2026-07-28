@@ -1,7 +1,6 @@
 import { Controller, Get, Post, Body, Patch, Param, Delete, ParseIntPipe, UseInterceptors, UploadedFile, BadRequestException } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
-import { extname } from 'path';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
@@ -15,19 +14,20 @@ export class UsersController {
     FileInterceptor('profilePicture', {
       storage: diskStorage({
         destination: './uploads',
-        filename: (req, file, callback) => {
-          const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
-          callback(null, uniqueSuffix + extname(file.originalname));
+        filename: (req, file, cb) => {
+          const fileName = Date.now() + '_' + file.originalname;
+          cb(null, fileName);
         },
       }),
-      limits: {
-        fileSize: 15 * 1024 * 1024, // Max 15MB size limit
-      },
-      fileFilter: (req, file, callback) => {
-        if (!file.originalname.match(/\.(jpg|jpeg|png|webp)$/i)) {
-          return callback(new BadRequestException('Only image files are allowed!'), false);
+      fileFilter: (req, file, cb) => {
+        if (file.originalname.match(/^.*\.(jpg|jpeg|png|webp)$/)) {
+          cb(null, true);
+        } else {
+          cb(new BadRequestException('file not staisfied the accepted types'), false);
         }
-        callback(null, true);
+      },
+      limits: {
+        fileSize: 3 * 1024 * 1024, // 3MB Limit (স্যারের মতো)
       },
     }),
   )
@@ -52,10 +52,35 @@ export class UsersController {
   }
 
   @Patch(':id')
+  @UseInterceptors(
+    FileInterceptor('profilePicture', {
+      storage: diskStorage({
+        destination: './uploads',
+        filename: (req, file, cb) => {
+          const fileName = Date.now() + '_' + file.originalname;
+          cb(null, fileName);
+        },
+      }),
+      fileFilter: (req, file, cb) => {
+        if (file.originalname.match(/^.*\.(jpg|jpeg|png|webp)$/)) {
+          cb(null, true);
+        } else {
+          cb(new BadRequestException('file not staisfied the accepted types'), false);
+        }
+      },
+      limits: {
+        fileSize: 3 * 1024 * 1024,
+      },
+    }),
+  )
   update(
-    @Param('id', ParseIntPipe) id: number, 
-    @Body() updateUserDto: UpdateUserDto
+    @Param('id', ParseIntPipe) id: number,
+    @Body() updateUserDto: UpdateUserDto,
+    @UploadedFile() file: Express.Multer.File,
   ) {
+    if (file) {
+      updateUserDto.profilePictureUrl = file.path;
+    }
     return this.usersService.update(id, updateUserDto);
   }
 

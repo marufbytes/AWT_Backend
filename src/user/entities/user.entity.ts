@@ -3,7 +3,6 @@ import { Resume } from '../../resume/entities/resume.entity';
 import { Company } from '../../company/entities/company.entity';
 import { Application } from '../../application/entities/application.entity';
 
-
 export enum UserRole {
   STUDENT = 'STUDENT',
   ALUMNI = 'ALUMNI',
@@ -44,18 +43,14 @@ export class User {
   @JoinColumn({ name: 'companyId' })
   company: Company;
 
-
-  @OneToMany(() => Resume, resume => resume.student)
+  @OneToMany(() => Resume, (resume) => resume.student)
   resumes: Resume[];
-
-
 
   @OneToMany(() => Application, (app) => app.student)
   applications: Application[];
 
   @OneToMany(() => Application, (app) => app.referredBy)
   referrals: Application[];
-
 
   @CreateDateColumn()
   createdAt: Date;
@@ -65,5 +60,4 @@ export class User {
 
   @DeleteDateColumn()
   deletedAt: Date;
-  
 }

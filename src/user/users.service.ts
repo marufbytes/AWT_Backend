@@ -1,9 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import * as bcrypt from 'bcrypt';
-import { CreateUserDto } from './dto/create-user.dto';
-import { UpdateUserDto } from './dto/update-user.dto';
 import { User } from './entities/user.entity';
 
 @Injectable()
@@ -13,20 +10,8 @@ export class UsersService {
     private readonly usersRepo: Repository<User>,
   ) {}
 
-  async create(createUserDto: CreateUserDto): Promise<User> {
-    const saltRounds = 10;
-    const hashedPassword = await bcrypt.hash(createUserDto.password, saltRounds);
-
-    const newUser = this.usersRepo.create({
-      firstName: createUserDto.firstName,
-      lastName: createUserDto.lastName,
-      email: createUserDto.email,
-      phone: createUserDto.phone,
-      role: createUserDto.role,
-      profilePictureUrl: createUserDto.profilePictureUrl,
-      passwordHash: hashedPassword,
-    });
-
+  async create(userData: Partial<User>): Promise<User> {
+    const newUser = this.usersRepo.create(userData);
     return await this.usersRepo.save(newUser);
   }
 
@@ -42,16 +27,12 @@ export class UsersService {
     return user;
   }
 
-  async update(id: number, updateUserDto: UpdateUserDto): Promise<User> {
+  async findByEmail(email: string): Promise<User | null> {
+    return await this.usersRepo.findOne({ where: { email } });
+  }
+
+  async update(id: number, updateData: Partial<User>): Promise<User> {
     await this.findOne(id);
-    
-    const updateData: any = { ...updateUserDto };
-
-    if (updateUserDto.password) {
-      updateData.passwordHash = await bcrypt.hash(updateUserDto.password, 10);
-      delete updateData.password;
-    }
-
     await this.usersRepo.update(id, updateData);
     return this.findOne(id);
   }
