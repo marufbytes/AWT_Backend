@@ -12,18 +12,26 @@ export class InternshipService {
   ) {}
 
   async createInternship(createInternshipDto: CreateInternshipDto): Promise<Internship> {
-    const internship = this.internshipRepo.create(createInternshipDto);
+    const internship = this.internshipRepo.create({
+      ...createInternshipDto,
+      company: { id: createInternshipDto.companyId },
+    });
     return await this.internshipRepo.save(internship);
   }
 
   async getAllInternships(): Promise<Internship[]> {
     return await this.internshipRepo.find({
+      relations: { company: true },
       select: {
         id: true,
         title: true,
         description: true,
         requirements: true,
         isActive: true,
+        company: {
+          id: true,
+          name: true,
+        },
       },
     });
   }
@@ -33,12 +41,17 @@ export class InternshipService {
       where: {
         id: id,
       },
+      relations: { company: true },
       select: {
         id: true,
         title: true,
         description: true,
         requirements: true,
         isActive: true,
+        company: {
+          id: true,
+          name: true,
+        },
       },
     });
 
