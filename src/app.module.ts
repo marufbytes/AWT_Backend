@@ -16,7 +16,7 @@ import { AuthModule } from './auth/auth.module';
       host: 'localhost',
       port: 5432,
       username: 'postgres',
-      password: '1234',
+      password: 'admin123',
       database: 'internnova_db',
       autoLoadEntities: true,
       synchronize: true,
