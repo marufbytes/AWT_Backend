@@ -49,7 +49,6 @@ export class AuthController {
     return this.authService.login(loginDto);
   }
 
-  ///fetch user data checking guard 
   @UseGuards(JwtAuthGuard)
   @Post('logout')
   logout(@Request() req) {

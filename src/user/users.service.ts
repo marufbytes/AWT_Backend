@@ -58,7 +58,6 @@ export class UsersService {
   }
 
 
-// partial for compile time
   async update(id: number, updateData: Partial<User>): Promise<User> {
     await this.findOne(id);
     
