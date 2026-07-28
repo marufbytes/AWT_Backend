@@ -1,9 +1,10 @@
-import { Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
+import { Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
 import { ApplicationStatus } from "../../common/enums/application-status.enum";
 import { ApplicationType } from "../../common/enums/application-type.enum";
 import { User } from "../../user/entities/user.entity";
 import { Internship } from "../../internship/entities/internship.entity";
 import { Resume } from "../../resume/entities/resume.entity";
+import { Interview } from "../../interview/interview.entity";
 
 @Entity()
 export class Application {
@@ -18,9 +19,9 @@ export class Application {
     })
     status: ApplicationStatus;
 
-    @Column({ 
-        type: 'enum', 
-        enum: ApplicationType 
+    @Column({
+        type: 'enum',
+        enum: ApplicationType
     })
     type: ApplicationType;
 
@@ -36,10 +37,10 @@ export class Application {
 
 
     @ManyToOne(() => User, (user) => user.referrals, {
-      nullable: true 
+        nullable: true
     })
     @JoinColumn({ name: 'referredById' })
-    referredBy: User |null;
+    referredBy: User | null;
 
 
 
@@ -52,8 +53,8 @@ export class Application {
     @JoinColumn({ name: 'resumeId' })
     resume: Resume;
 
-   /* @OneToMany(() => Interview, (interview) => interview.application)
-    interviews: Interview[];*/
+    @OneToMany(() => Interview, (interview) => interview.application)
+    interviews: Interview[];
 
 
 }
