@@ -1,23 +1,23 @@
-import { Module } from '@nestjs/common';
-import { TypeOrmModule } from '@nestjs/typeorm';
-import { AppController } from './app.controller';
-import { AppService } from './app.service';
-import { UsersModule } from './user/users.module';
-import { ResumeModule } from './resume/resume.module';
-import { InternshipModule } from './internship/internship.module';
-import { CompanyModule } from './company/company.module';
-import { ApplicationModule } from './application/application.module';
-import { AuthModule } from './auth/auth.module';
+import { Module } from "@nestjs/common";
+import { TypeOrmModule } from "@nestjs/typeorm";
+import { AppController } from "./app.controller";
+import { AppService } from "./app.service";
+import { UsersModule } from "./user/users.module";
+import { ResumeModule } from "./resume/resume.module";
+import { InternshipModule } from "./internship/internship.module";
+import { CompanyModule } from "./company/company.module";
+import { ApplicationModule } from "./application/application.module";
+import { AuthModule } from "./auth/auth.module";
 
 @Module({
   imports: [
     TypeOrmModule.forRoot({
-      type: 'postgres',
-      host: 'localhost',
+      type: "postgres",
+      host: "localhost",
       port: 5432,
-      username: 'postgres',
-      password: '1234',
-      database: 'internnova_db',
+      username: "postgres",
+      password: "alfaz",
+      database: "internnova_db",
       autoLoadEntities: true,
       synchronize: true,
     }),
