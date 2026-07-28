@@ -6,6 +6,7 @@ import * as bcrypt from 'bcrypt';
 import { MailService } from '../mail/mail.service';
 
 @Injectable()
+
 export class UsersService {
   constructor(
     @InjectRepository(User)
@@ -36,9 +37,11 @@ export class UsersService {
     return savedUser;
   }
 
+
   async findAll(): Promise<User[]> {
     return await this.usersRepo.find();
   }
+
 
   async findOne(id: number): Promise<User> {
     const user = await this.usersRepo.findOne({ where: { id } });
@@ -48,10 +51,14 @@ export class UsersService {
     return user;
   }
 
+
+
   async findByEmail(email: string): Promise<User | null> {
     return await this.usersRepo.findOne({ where: { email } });
   }
 
+
+// partial for compile time
   async update(id: number, updateData: Partial<User>): Promise<User> {
     await this.findOne(id);
     

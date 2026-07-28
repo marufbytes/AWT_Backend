@@ -26,8 +26,8 @@ export class CreateUserDto {
   })
   password: string;
 
-  @IsEnum(UserRole)
-  @IsNotEmpty()
+  @IsNotEmpty({ message: 'Role is required' })
+  @IsEnum(UserRole, { message: 'Invalid user role' })
   role: UserRole;
 
   @IsString()
