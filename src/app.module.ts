@@ -9,6 +9,7 @@ import { CompanyModule } from './company/company.module';
 import { ApplicationModule } from './application/application.module';
 import { AuthModule } from './auth/auth.module';
 import { InterviewsModule } from './interview/interview.module';
+import { MailModule } from './mail/mail.module';
 
 @Module({
   imports: [
@@ -29,6 +30,7 @@ import { InterviewsModule } from './interview/interview.module';
     ApplicationModule,
     AuthModule,
     InterviewsModule,
+    MailModule,
   ],
   controllers: [AppController],
   providers: [AppService],
