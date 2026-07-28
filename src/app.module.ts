@@ -8,6 +8,7 @@ import { InternshipModule } from './internship/internship.module';
 import { CompanyModule } from './company/company.module';
 import { ApplicationModule } from './application/application.module';
 import { AuthModule } from './auth/auth.module';
+import { InterviewsModule } from './interview/interview.module';
 
 @Module({
   imports: [
@@ -27,6 +28,7 @@ import { AuthModule } from './auth/auth.module';
     CompanyModule,
     ApplicationModule,
     AuthModule,
+    InterviewsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
