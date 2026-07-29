@@ -27,7 +27,7 @@ export class UsersController {
         }
       },
       limits: {
-        fileSize: 3 * 1024 * 1024, 
+        fileSize: 15 * 1024 * 1024,
       },
     }),
   )
@@ -69,7 +69,7 @@ export class UsersController {
         }
       },
       limits: {
-        fileSize: 3 * 1024 * 1024,
+        fileSize: 15 * 1024 * 1024,
       },
     }),
   )
