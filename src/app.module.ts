@@ -18,6 +18,7 @@ import { MailModule } from './mail/mail.module';
       host: "localhost",
       port: 5432,
       username: "postgres",
+      password:'1234',
       database: "internnova_db",
       autoLoadEntities: true,
       synchronize: true,

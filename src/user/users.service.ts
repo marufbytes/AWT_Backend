@@ -6,7 +6,6 @@ import * as bcrypt from 'bcrypt';
 import { MailService } from '../mail/mail.service';
 
 @Injectable()
-
 export class UsersService {
   constructor(
     @InjectRepository(User)
@@ -15,12 +14,18 @@ export class UsersService {
   ) {}
 
   async create(userData: any): Promise<User> {
-    const salt = await bcrypt.genSalt(10);
-    const hashedPassword = await bcrypt.hash(userData.password, salt);
+    let passwordHash = userData.passwordHash;
+
+    if (userData.password && !passwordHash) {
+      const salt = await bcrypt.genSalt(10);
+      passwordHash = await bcrypt.hash(userData.password, salt);
+    }
+
+    const { password, ...userEntityData } = userData;
 
     const newUser = this.usersRepo.create({
-      ...userData,
-      passwordHash: hashedPassword, 
+      ...userEntityData,
+      passwordHash,
     } as Partial<User>);
     
     const savedUser = await this.usersRepo.save(newUser);
@@ -37,11 +42,9 @@ export class UsersService {
     return savedUser;
   }
 
-
   async findAll(): Promise<User[]> {
     return await this.usersRepo.find();
   }
-
 
   async findOne(id: number): Promise<User> {
     const user = await this.usersRepo.findOne({ where: { id } });
@@ -51,12 +54,9 @@ export class UsersService {
     return user;
   }
 
-
-
   async findByEmail(email: string): Promise<User | null> {
     return await this.usersRepo.findOne({ where: { email } });
   }
-
 
   async update(id: number, updateData: Partial<User>): Promise<User> {
     await this.findOne(id);
@@ -64,7 +64,9 @@ export class UsersService {
     await this.usersRepo.update(id, updateData);
     const updatedUser = await this.findOne(id);
 
-    if (updatedUser.email) {
+    const isTokenUpdateOnly = 'hashedRefreshToken' in updateData && Object.keys(updateData).length === 1;
+
+    if (updatedUser.email && !isTokenUpdateOnly) {
       this.mailService
         .sendProfileUpdateEmail(updatedUser.email, updatedUser.firstName || 'User')
         .catch((error) => console.error('Failed to send update email:', error));
