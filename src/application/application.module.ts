@@ -7,9 +7,10 @@ import { ResumeService } from '../resume/resume.service';
 import { UsersModule } from '../user/users.module';
 import { InternshipModule } from '../internship/internship.module';
 import { ResumeModule } from '../resume/resume.module';
+import { AuthModule } from '../auth/auth.module';
 
 @Module({
-  imports:[TypeOrmModule.forFeature([Application]),UsersModule,InternshipModule,ResumeModule],
+  imports:[TypeOrmModule.forFeature([Application]),UsersModule,InternshipModule,ResumeModule,AuthModule],
   controllers: [ApplicationController],
   providers: [ApplicationService],
   exports:[ApplicationService]
