@@ -4,47 +4,62 @@ import { Repository } from 'typeorm';
 import { CreateInterviewDto } from './dto/create-interview.dto';
 import { UpdateInterviewDto } from './dto/update-interview.dto';
 import { Interview } from './interview.entity';
+import { Application } from '../application/entities/application.entity';
 
 @Injectable()
-export class InterviewsService {
-    constructor(
-        @InjectRepository(Interview)
-        private readonly interviewRepo: Repository<Interview>,
-    ) { }
+export class InterviewService {
+  constructor(
+    @InjectRepository(Interview)
+    private readonly interviewRepository: Repository<Interview>,
+    @InjectRepository(Application)
+    private readonly applicationRepository: Repository<Application>,
+  ) {}
 
-    async create(createInterviewDto: CreateInterviewDto) {
-        const interview = this.interviewRepo.create({
-            scheduledDate: new Date(createInterviewDto.scheduledDate),
-            meetingLink: createInterviewDto.meetingLink,
-            application: { id: createInterviewDto.applicationId },
-        });
-        return await this.interviewRepo.save(interview);
+  async create(createInterviewDto: CreateInterviewDto): Promise<Interview> {
+    const application = await this.applicationRepository.findOneBy({
+      id: createInterviewDto.applicationId,
+    });
+
+    if (!application) {
+      throw new NotFoundException(
+        `Application with ID ${createInterviewDto.applicationId} not found`,
+      );
     }
 
-    async findAll() {
-        return await this.interviewRepo.find({
-            relations: { application: true },
-        });
-    }
+    const interview = this.interviewRepository.create({
+      ...createInterviewDto,
+      scheduledDate: new Date(createInterviewDto.scheduledDate),
+    });
+    return await this.interviewRepository.save(interview);
+  }
 
-    async findOne(id: number) {
-        const interview = await this.interviewRepo.findOne({
-            where: { id },
-            relations: { application: true },
-        });
-        if (!interview) {
-            throw new NotFoundException(`Interview with ID ${id} not found`);
-        }
-        return interview;
-    }
+  async findAll(): Promise<Interview[]> {
+    return await this.interviewRepository.find({ relations: { application: true } });
+  }
 
-    async update(id: number, updateInterviewDto: UpdateInterviewDto) {
-        await this.findOne(id);
-        return await this.interviewRepo.update(id, updateInterviewDto);
+  async findOne(id: number): Promise<Interview> {
+    const interview = await this.interviewRepository.findOne({
+      where: { id },
+      relations: { application: true },
+    });
+    if (!interview) {
+      throw new NotFoundException(`Interview with ID ${id} not found`);
     }
+    return interview;
+  }
 
-    async remove(id: number) {
-        await this.findOne(id);
-        return await this.interviewRepo.delete(id);
-    }
+  async update(id: number, updateInterviewDto: UpdateInterviewDto): Promise<Interview> {
+    await this.findOne(id);
+    const { scheduledDate, ...updateData } = updateInterviewDto;
+    await this.interviewRepository.update(id, {
+      ...updateData,
+      ...(scheduledDate && { scheduledDate: new Date(scheduledDate) }),
+    });
+    return await this.findOne(id);
+  }
+
+  async remove(id: number): Promise<void> {
+    await this.findOne(id);
+    await this.interviewRepository.delete(id);
+  }
 }

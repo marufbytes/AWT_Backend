@@ -6,6 +6,9 @@ export class Interview {
   @PrimaryGeneratedColumn()
   id: number;
 
+  @Column()
+  applicationId: number;
+
   @Column({ type: 'timestamp' })
   scheduledDate: Date;
 
@@ -15,7 +18,7 @@ export class Interview {
   @Column({ default: 'SCHEDULED' })
   status: string;
 
-  @ManyToOne(() => Application, (application) => application.interviews)
+  @ManyToOne(() => Application, (application) => application.interviews, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'applicationId' })
   application: Application;
 
