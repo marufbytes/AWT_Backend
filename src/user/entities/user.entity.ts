@@ -1,4 +1,7 @@
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, DeleteDateColumn } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, DeleteDateColumn, OneToMany, JoinColumn, ManyToOne } from 'typeorm';
+import { Resume } from '../../resume/entities/resume.entity';
+import { Company } from '../../company/entities/company.entity';
+import { Application } from '../../application/entities/application.entity';
 
 export enum UserRole {
   STUDENT = 'STUDENT',
@@ -27,7 +30,8 @@ export class User {
   @Column()
   passwordHash: string;
 
-  @Column({ type: 'enum', enum: UserRole, default: UserRole.STUDENT })
+
+  @Column({ type: 'enum', enum: UserRole })
   role: UserRole;
 
   @Column({ nullable: true })
@@ -36,13 +40,18 @@ export class User {
   @Column({ nullable: true })
   hashedRefreshToken: string;
 
-  // RELATIONS (Commented out for now until we build the other modules)
-  // @ManyToOne(() => Company, company => company.users, { nullable: true })
-  // company: Company;
-  // @OneToMany(() => Resume, resume => resume.student)
-  // resumes: Resume[];
-  // @OneToMany(() => Application, app => app.student)
-  // applications: Application[];
+  @ManyToOne(() => Company, (company) => company.users, { nullable: true })
+  @JoinColumn({ name: 'companyId' })
+  company: Company;
+
+  @OneToMany(() => Resume, (resume) => resume.student)
+  resumes: Resume[];
+
+  @OneToMany(() => Application, (app) => app.student)
+  applications: Application[];
+
+  @OneToMany(() => Application, (app) => app.referredBy)
+  referrals: Application[];
 
   @CreateDateColumn()
   createdAt: Date;

@@ -1,33 +1,45 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import * as bcrypt from 'bcrypt';
-import { CreateUserDto } from './dto/create-user.dto';
-import { UpdateUserDto } from './dto/update-user.dto';
 import { User } from './entities/user.entity';
+import * as bcrypt from 'bcrypt';
+import { MailService } from '../mail/mail.service';
 
 @Injectable()
 export class UsersService {
   constructor(
     @InjectRepository(User)
     private readonly usersRepo: Repository<User>,
+    private readonly mailService: MailService,
   ) {}
 
-  async create(createUserDto: CreateUserDto): Promise<User> {
-    const saltRounds = 10;
-    const hashedPassword = await bcrypt.hash(createUserDto.password, saltRounds);
+  async create(userData: any): Promise<User> {
+    let passwordHash = userData.passwordHash;
+
+    if (userData.password && !passwordHash) {
+      const salt = await bcrypt.genSalt(10);
+      passwordHash = await bcrypt.hash(userData.password, salt);
+    }
+
+    const { password, ...userEntityData } = userData;
 
     const newUser = this.usersRepo.create({
-      firstName: createUserDto.firstName,
-      lastName: createUserDto.lastName,
-      email: createUserDto.email,
-      phone: createUserDto.phone,
-      role: createUserDto.role,
-      profilePictureUrl: createUserDto.profilePictureUrl,
-      passwordHash: hashedPassword,
-    });
+      ...userEntityData,
+      passwordHash,
+    } as Partial<User>);
+    
+    const savedUser = await this.usersRepo.save(newUser);
 
-    return await this.usersRepo.save(newUser);
+    if (savedUser.email) {
+      this.mailService
+        .sendProfileCreationEmail(savedUser.email, savedUser.firstName || 'User')
+        .catch((error) => console.error('Failed to send welcome email:', error));
+    }
+
+    delete (savedUser as any).passwordHash;
+    delete (savedUser as any).password; 
+
+    return savedUser;
   }
 
   async findAll(): Promise<User[]> {
@@ -42,18 +54,25 @@ export class UsersService {
     return user;
   }
 
-  async update(id: number, updateUserDto: UpdateUserDto): Promise<User> {
+  async findByEmail(email: string): Promise<User | null> {
+    return await this.usersRepo.findOne({ where: { email } });
+  }
+
+  async update(id: number, updateData: Partial<User>): Promise<User> {
     await this.findOne(id);
     
-    const updateData: any = { ...updateUserDto };
+    await this.usersRepo.update(id, updateData);
+    const updatedUser = await this.findOne(id);
 
-    if (updateUserDto.password) {
-      updateData.passwordHash = await bcrypt.hash(updateUserDto.password, 10);
-      delete updateData.password;
+    const isTokenUpdateOnly = 'hashedRefreshToken' in updateData && Object.keys(updateData).length === 1;
+
+    if (updatedUser.email && !isTokenUpdateOnly) {
+      this.mailService
+        .sendProfileUpdateEmail(updatedUser.email, updatedUser.firstName || 'User')
+        .catch((error) => console.error('Failed to send update email:', error));
     }
 
-    await this.usersRepo.update(id, updateData);
-    return this.findOne(id);
+    return updatedUser;
   }
 
   async remove(id: number): Promise<void> {
