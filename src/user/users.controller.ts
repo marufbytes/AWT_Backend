@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, ParseIntPipe, UseInterceptors, UploadedFile, BadRequestException, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, ParseIntPipe, UseInterceptors, UploadedFile, BadRequestException, UseGuards, UnauthorizedException, Req } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
 import { UsersService } from './users.service';
@@ -6,12 +6,13 @@ import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { UserRole } from './entities/user.entity';
-import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard'; 
-import { RolesGuard } from '../auth/guards/roles.guard';    
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { RolesGuard } from '../auth/guards/roles.guard';
 
-@Controller('user')
+
+@Controller('users')
 export class UsersController {
-  constructor(private readonly usersService: UsersService) {}
+  constructor(private readonly usersService: UsersService) { }
 
   @Post()
   @UseGuards(JwtAuthGuard, RolesGuard)
@@ -47,17 +48,27 @@ export class UsersController {
     return this.usersService.create(createUserDto);
   }
 
-  @Get()
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(UserRole.ADMIN)
-  findAll() {
-    return this.usersService.findAll();
+  @Get('me')
+  @UseGuards(JwtAuthGuard)
+  getProfile(@Req() req) {
+    if (!req.user || !req.user.id) {
+      throw new UnauthorizedException('User not authenticated');
+    }
+    return this.usersService.findOne(req.user.id);
   }
 
-  @Get(':id')
-  @UseGuards(JwtAuthGuard) 
-  findOne(@Param('id', ParseIntPipe) id: number) {
-    return this.usersService.findOne(id);
+  @Patch('profile')
+  @UseGuards(JwtAuthGuard)
+  updateProfile(@Req() req, @Body() updateUserDto: UpdateUserDto) {
+    return this.usersService.update(req.user.id, updateUserDto);
+  }
+
+
+  // PATCH /users/change-password - পাসওয়ার্ড পরিবর্তন
+  @Patch('change-password')
+  @UseGuards(JwtAuthGuard)
+  changePassword(@Req() req, @Body() dto: { currentPassword: string; newPassword: string }) {
+    return this.usersService.changePasswordx(req.user.id, dto.currentPassword, dto.newPassword);
   }
 
   @Patch(':id')

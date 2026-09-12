@@ -11,9 +11,10 @@ export class CreateInterviewDto {
 
   @IsString()
   @IsNotEmpty()
-  meetingLink: string;
-
-  @IsString()
   @IsOptional()
-  status?: string;
+  meetingLink?: string;
+
+ /* @IsString()
+  @IsOptional()
+  status?: string;*/
 }

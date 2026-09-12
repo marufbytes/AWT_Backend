@@ -1,4 +1,4 @@
-import { Controller, Post, Body, UseGuards, Request, UseInterceptors, UploadedFile, BadRequestException } from '@nestjs/common';
+import { Controller, Post, Body, UseGuards, Request, UseInterceptors, UploadedFile, BadRequestException, Res } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
 import { extname } from 'path';
@@ -6,10 +6,12 @@ import { AuthService } from './auth.service';
 import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register.dto';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
+import type { Response } from 'express';
+
 
 @Controller('auth')
 export class AuthController {
-  constructor(private readonly authService: AuthService) {}
+  constructor(private readonly authService: AuthService) { }
 
 
   @Post('register')
@@ -45,13 +47,53 @@ export class AuthController {
 
 
   @Post('login')
-  login(@Body() loginDto: LoginDto) {
-    return this.authService.login(loginDto);
+  async login(
+    @Body() loginDto: LoginDto,
+    @Res({ passthrough: true }) response: Response,
+  ) {
+    const result = await this.authService.login(loginDto);
+
+    response.cookie('accessToken', result.accessToken, {
+      httpOnly: true,
+      secure: false,
+      sameSite: 'lax',
+      maxAge: 24 * 60 * 60 * 1000,
+    });
+
+    response.cookie('refreshToken', result.refreshToken, {
+      httpOnly: true,
+      secure: false,
+      sameSite: 'lax',
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+    });
+
+    return {
+      user: result.user,
+    };
   }
 
-  @UseGuards(JwtAuthGuard)
+
+
+
+
+
+
   @Post('logout')
-  logout(@Request() req) {
-    return this.authService.logout(req.user.id);
+  @UseGuards(JwtAuthGuard)
+  async logout(
+    @Request() req,
+    @Res({ passthrough: true }) response: Response,
+  ) {
+    await this.authService.logout(req.user.id);
+
+    response.clearCookie('accessToken');
+    response.clearCookie('refreshToken');
+
+    return {
+      message: 'Logged out successfully',
+    };
   }
+
+
+
 }

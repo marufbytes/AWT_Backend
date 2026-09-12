@@ -8,9 +8,10 @@ import { UsersModule } from '../user/users.module';
 import { InternshipModule } from '../internship/internship.module';
 import { ResumeModule } from '../resume/resume.module';
 import { AuthModule } from '../auth/auth.module';
+import { User } from '../user/entities/user.entity';
 
 @Module({
-  imports:[TypeOrmModule.forFeature([Application]),UsersModule,InternshipModule,ResumeModule,AuthModule],
+  imports:[TypeOrmModule.forFeature([Application,User]),UsersModule,InternshipModule,ResumeModule,AuthModule],
   controllers: [ApplicationController],
   providers: [ApplicationService],
   exports:[ApplicationService]

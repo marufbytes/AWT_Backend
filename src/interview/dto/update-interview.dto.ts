@@ -1,9 +1,11 @@
 import { PartialType } from '@nestjs/mapped-types';
 import { CreateInterviewDto } from './create-interview.dto';
-import { IsOptional, IsString } from 'class-validator';
+import { IsEnum, IsOptional, IsString } from 'class-validator';
+import { InterviewStatus } from '../../common/enums/InterviewStatus.enum';
 
 export class UpdateInterviewDto extends PartialType(CreateInterviewDto) {
-  @IsString()
+  @IsEnum(InterviewStatus)
   @IsOptional()
-  status?: string;
+  status?: InterviewStatus;
+
 }
