@@ -19,7 +19,7 @@ import { UploadsController } from './uploads/uploads.controller';
       host: "localhost",
       port: 5432,
       username: "postgres",
-      password:'admin123',
+      password:'1234',
       database: "internnova_db",
       autoLoadEntities: true,
       synchronize: true,

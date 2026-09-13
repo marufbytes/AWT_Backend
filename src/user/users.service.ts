@@ -90,15 +90,11 @@ export class UsersService {
   }
 
 
-
-
-  // পাসওয়ার্ড পরিবর্তনের মেথড
   async changePassword(
     id: number,
     currentPassword: string,
     newPassword: string,
   ): Promise<{ message: string }> {
-    // পাসওয়ার্ড ভ্যালিডেশনের জন্য passwordHash সহ ইউজার কোয়েরি
     const user = await this.usersRepo.createQueryBuilder('user')
       .addSelect('user.passwordHash')
       .where('user.id = :id', { id })
@@ -112,7 +108,6 @@ export class UsersService {
       throw new BadRequestException('Password is not set for this account');
     }
 
-    // বর্তমান পাসওয়ার্ড ভ্যালিডেশন
     const isMatched = await bcrypt.compare(currentPassword, user.passwordHash);
     if (!isMatched) {
       throw new BadRequestException('Current password is incorrect');
@@ -133,12 +128,9 @@ export class UsersService {
 
     return { message: 'Password updated successfully' };
   }
-  
-
-
 
   async remove(id: number): Promise<void> {
     await this.findOne(id);
     await this.usersRepo.softDelete(id);
   }
-} BadRequestException
+}

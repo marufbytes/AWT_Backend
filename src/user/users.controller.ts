@@ -9,10 +9,18 @@ import { UserRole } from './entities/user.entity';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 
-
 @Controller('users')
 export class UsersController {
   constructor(private readonly usersService: UsersService) { }
+
+  @Get()
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.ADMIN)
+  async findAll() {
+    const data = await this.usersService.findAll();
+    console.log('Backend returned users:', data); // টার্মিনালে ডেটা লগ দেখার জন্য
+    return data;
+  }
 
   @Post()
   @UseGuards(JwtAuthGuard, RolesGuard)
@@ -57,22 +65,28 @@ export class UsersController {
     return this.usersService.findOne(req.user.id);
   }
 
+  @Get(':id')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.ADMIN)
+  findOne(@Param('id', ParseIntPipe) id: number) {
+    return this.usersService.findOne(id);
+  }
+
   @Patch('profile')
   @UseGuards(JwtAuthGuard)
   updateProfile(@Req() req, @Body() updateUserDto: UpdateUserDto) {
     return this.usersService.update(req.user.id, updateUserDto);
   }
 
-
-  // PATCH /users/change-password - পাসওয়ার্ড পরিবর্তন
   @Patch('change-password')
   @UseGuards(JwtAuthGuard)
   changePassword(@Req() req, @Body() dto: { currentPassword: string; newPassword: string }) {
-    return this.usersService.changePasswordx(req.user.id, dto.currentPassword, dto.newPassword);
+    return this.usersService.changePassword(req.user.id, dto.currentPassword, dto.newPassword);
   }
 
   @Patch(':id')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.ADMIN)
   @UseInterceptors(
     FileInterceptor('profilePicture', {
       storage: diskStorage({
