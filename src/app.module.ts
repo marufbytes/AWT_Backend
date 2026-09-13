@@ -10,6 +10,7 @@ import { ApplicationModule } from './application/application.module';
 import { AuthModule } from './auth/auth.module';
 import { InterviewsModule } from './interview/interview.module';
 import { MailModule } from './mail/mail.module';
+import { AlumniModule } from './alumni/alumni.module';
 
 @Module({
   imports: [
@@ -31,6 +32,7 @@ import { MailModule } from './mail/mail.module';
     AuthModule,
     InterviewsModule,
     MailModule,
+    AlumniModule,
   ],
   controllers: [AppController],
   providers: [AppService],
