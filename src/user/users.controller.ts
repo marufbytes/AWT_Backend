@@ -23,8 +23,6 @@ export class UsersController {
   }
 
   @Post()
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(UserRole.ADMIN)
   @UseInterceptors(
     FileInterceptor('profilePicture', {
       storage: diskStorage({
@@ -73,13 +71,15 @@ export class UsersController {
   }
 
   @Patch('profile')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.ADMIN)
   updateProfile(@Req() req, @Body() updateUserDto: UpdateUserDto) {
     return this.usersService.update(req.user.id, updateUserDto);
   }
 
   @Patch('change-password')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.ADMIN)
   changePassword(@Req() req, @Body() dto: { currentPassword: string; newPassword: string }) {
     return this.usersService.changePassword(req.user.id, dto.currentPassword, dto.newPassword);
   }
