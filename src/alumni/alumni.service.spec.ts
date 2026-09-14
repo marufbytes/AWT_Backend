@@ -1,10 +1,4 @@
-import {
-  beforeEach,
-  describe,
-  expect,
-  it,
-  jest,
-} from '@jest/globals';
+import { beforeEach, describe, expect, it, jest } from '@jest/globals';
 import { Test, TestingModule } from '@nestjs/testing';
 import { BadRequestException, ForbiddenException } from '@nestjs/common';
 import { getRepositoryToken } from '@nestjs/typeorm';
@@ -16,19 +10,15 @@ import { Resume } from '../resume/entities/resume.entity';
 import { ReferralPostStatus } from './enums/referral-post-status.enum';
 import { ReferralApplicationStatus } from './enums/referral-application-status.enum';
 
-// A plain object shape (not the real `Repository` class) covering only the
-// methods `AlumniService` actually calls, so
-// `@typescript-eslint/unbound-method` doesn't treat these jest mocks as
-// unbound class methods.
-interface MockRepo {
-  find: jest.Mock;
-  findOne: jest.Mock;
-  create: jest.Mock;
-  save: jest.Mock;
-  count: jest.Mock;
+interface FakeRepo {
+  find: jest.Mock<(...args: unknown[]) => Promise<unknown>>;
+  findOne: jest.Mock<(...args: unknown[]) => Promise<unknown>>;
+  create: jest.Mock<(entity: unknown) => unknown>;
+  save: jest.Mock<(entity: unknown) => Promise<unknown>>;
+  count: jest.Mock<(...args: unknown[]) => Promise<unknown>>;
 }
 
-const createMockRepo = (): MockRepo => ({
+const createFakeRepo = (): FakeRepo => ({
   find: jest.fn(),
   findOne: jest.fn(),
   create: jest.fn((entity: unknown) => entity),
@@ -38,10 +28,10 @@ const createMockRepo = (): MockRepo => ({
 
 describe('AlumniService', () => {
   let service: AlumniService;
-  let referralPostRepo: MockRepo;
-  let referralApplicationRepo: MockRepo;
-  let userRepo: MockRepo;
-  let resumeRepo: MockRepo;
+  let referralPostRepo: FakeRepo;
+  let referralApplicationRepo: FakeRepo;
+  let userRepo: FakeRepo;
+  let resumeRepo: FakeRepo;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -49,24 +39,24 @@ describe('AlumniService', () => {
         AlumniService,
         {
           provide: getRepositoryToken(ReferralPost),
-          useValue: createMockRepo(),
+          useValue: createFakeRepo(),
         },
         {
           provide: getRepositoryToken(ReferralApplication),
-          useValue: createMockRepo(),
+          useValue: createFakeRepo(),
         },
-        { provide: getRepositoryToken(User), useValue: createMockRepo() },
-        { provide: getRepositoryToken(Resume), useValue: createMockRepo() },
+        { provide: getRepositoryToken(User), useValue: createFakeRepo() },
+        { provide: getRepositoryToken(Resume), useValue: createFakeRepo() },
       ],
     }).compile();
 
     service = module.get<AlumniService>(AlumniService);
-    referralPostRepo = module.get<MockRepo>(getRepositoryToken(ReferralPost));
-    referralApplicationRepo = module.get<MockRepo>(
+    referralPostRepo = module.get<FakeRepo>(getRepositoryToken(ReferralPost));
+    referralApplicationRepo = module.get<FakeRepo>(
       getRepositoryToken(ReferralApplication),
     );
-    userRepo = module.get<MockRepo>(getRepositoryToken(User));
-    resumeRepo = module.get<MockRepo>(getRepositoryToken(Resume));
+    userRepo = module.get<FakeRepo>(getRepositoryToken(User));
+    resumeRepo = module.get<FakeRepo>(getRepositoryToken(Resume));
   });
 
   it('should be defined', () => {
@@ -134,7 +124,7 @@ describe('AlumniService', () => {
 
     it('refuses to accept once the vacancy is full', async () => {
       referralApplicationRepo.findOne.mockResolvedValue(baseApplication);
-      referralApplicationRepo.count.mockResolvedValue(1); // already == vacancies
+      referralApplicationRepo.count.mockResolvedValue(1);
 
       await expect(
         service.respondToApplication(1, 5, {

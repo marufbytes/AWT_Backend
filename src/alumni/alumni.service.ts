@@ -35,8 +35,6 @@ export class AlumniService {
     private readonly resumeRepo: Repository<Resume>,
   ) {}
 
-  // Referral posts
-
   async createReferralPost(
     alumniId: number,
     dto: CreateReferralPostDto,
@@ -71,7 +69,6 @@ export class AlumniService {
     return await this.referralPostRepo.save(post);
   }
 
-  // Posts created by one alumni, newest first.
   async getMyReferralPosts(alumniId: number): Promise<ReferralPost[]> {
     return await this.referralPostRepo.find({
       where: { alumni: { id: alumniId } },
@@ -80,7 +77,6 @@ export class AlumniService {
     });
   }
 
-  // Posts every student is allowed to see and apply to.
   async getApprovedReferralPosts(): Promise<ReferralPost[]> {
     return await this.referralPostRepo.find({
       where: { status: ReferralPostStatus.APPROVED },
@@ -89,7 +85,6 @@ export class AlumniService {
     });
   }
 
-  // Posts still awaiting an admin's decision.
   async getPendingReferralPosts(): Promise<ReferralPost[]> {
     return await this.referralPostRepo.find({
       where: { status: ReferralPostStatus.PENDING },
@@ -111,7 +106,6 @@ export class AlumniService {
     return post;
   }
 
-  // Admin approves or rejects a post that is currently PENDING.
   async updateReferralPostStatus(
     id: number,
     dto: UpdateReferralPostStatusDto,
@@ -128,9 +122,6 @@ export class AlumniService {
     return await this.referralPostRepo.save(post);
   }
 
-  // Students
-  // Students who have never had an application accepted through any
-  // alumni referral post, joined with their latest resume (if any).
   async getUnplacedStudents(): Promise<
     Array<{
       id: number;
@@ -190,9 +181,6 @@ export class AlumniService {
     });
   }
 
-  // Applications
-
-  // A student applies to one of the APPROVED referral posts.
   async applyToReferralPost(
     postId: number,
     studentId: number,
@@ -224,7 +212,6 @@ export class AlumniService {
     return await this.referralApplicationRepo.save(application);
   }
 
-  // Every application submitted to one alumni's posts, newest first.
   async getApplicationsForAlumni(
     alumniId: number,
   ): Promise<ReferralApplication[]> {
@@ -235,7 +222,6 @@ export class AlumniService {
     });
   }
 
-  // A student's own applications, newest first.
   async getApplicationsForStudent(
     studentId: number,
   ): Promise<ReferralApplication[]> {
@@ -246,7 +232,6 @@ export class AlumniService {
     });
   }
 
-  // How many students the alumni has accepted across all of their posts.
   async getAcceptedApplicationCount(alumniId: number): Promise<number> {
     return await this.referralApplicationRepo.count({
       where: {
@@ -256,8 +241,6 @@ export class AlumniService {
     });
   }
 
-  // Accept or reject a student's application. Accepting is refused once the
-  // post's vacancies are already filled.
   async respondToApplication(
     applicationId: number,
     alumniId: number,

@@ -46,7 +46,6 @@ export class CreateReferralPostDto {
   @IsNotEmpty()
   deadline!: string;
 
-  // IDs of students the alumni wants to point the company towards.
   @IsArray()
   @IsInt({ each: true })
   @IsPositive({ each: true })

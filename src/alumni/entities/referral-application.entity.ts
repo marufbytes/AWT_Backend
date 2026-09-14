@@ -12,8 +12,6 @@ import { User } from '../../user/entities/user.entity';
 import { ReferralApplicationStatus } from '../enums/referral-application-status.enum';
 import { ReferralPost } from './referral-post.entity';
 
-// A student's application to one of an alumni's APPROVED referral posts.
-// A student may only apply once per post.
 @Entity('referral_applications')
 @Unique(['student', 'referralPost'])
 export class ReferralApplication {
@@ -27,7 +25,6 @@ export class ReferralApplication {
   })
   status!: ReferralApplicationStatus;
 
-  // Note sent back to the student, e.g. once the vacancy is filled.
   @Column({ type: 'text', nullable: true })
   responseMessage!: string | null;
 

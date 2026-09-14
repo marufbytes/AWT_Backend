@@ -23,8 +23,7 @@ import { User, UserRole } from '../user/entities/user.entity';
 export class AlumniController {
   constructor(private readonly alumniService: AlumniService) {}
 
-  // -- Referral posts -----------------------------------------------------
-
+  // Create a referral post
   @Post('posts')
   @Roles(UserRole.ALUMNI)
   createReferralPost(
@@ -34,30 +33,35 @@ export class AlumniController {
     return this.alumniService.createReferralPost(user.id, dto);
   }
 
+  // Get my referral posts
   @Get('posts/mine')
   @Roles(UserRole.ALUMNI)
   getMyReferralPosts(@GetUser() user: User) {
     return this.alumniService.getMyReferralPosts(user.id);
   }
 
+  // Get pending referral posts
   @Get('posts/pending')
   @Roles(UserRole.ADMIN)
   getPendingReferralPosts() {
     return this.alumniService.getPendingReferralPosts();
   }
 
+  // Get approved referral posts
   @Get('posts')
   @Roles(UserRole.STUDENT, UserRole.ALUMNI, UserRole.ADMIN)
   getApprovedReferralPosts() {
     return this.alumniService.getApprovedReferralPosts();
   }
 
+  // Get a referral post by id
   @Get('posts/:id')
   @Roles(UserRole.STUDENT, UserRole.ALUMNI, UserRole.ADMIN)
   getReferralPostById(@Param('id', ParseIntPipe) id: number) {
     return this.alumniService.getReferralPostById(id);
   }
 
+  // Update referral post status
   @Patch('posts/:id/status')
   @Roles(UserRole.ADMIN)
   updateReferralPostStatus(
@@ -67,16 +71,14 @@ export class AlumniController {
     return this.alumniService.updateReferralPostStatus(id, dto);
   }
 
-  // -- Students -------------------------------------------------------------
-
+  // Get unplaced students
   @Get('students/unplaced')
   @Roles(UserRole.ALUMNI)
   getUnplacedStudents() {
     return this.alumniService.getUnplacedStudents();
   }
 
-  // -- Applications ---------------------------------------------------------
-
+  // Apply to a referral post
   @Post('posts/:id/apply')
   @Roles(UserRole.STUDENT)
   applyToReferralPost(
@@ -86,24 +88,28 @@ export class AlumniController {
     return this.alumniService.applyToReferralPost(id, user.id);
   }
 
+  // Get applications for alumni
   @Get('applications')
   @Roles(UserRole.ALUMNI)
   getApplicationsForAlumni(@GetUser() user: User) {
     return this.alumniService.getApplicationsForAlumni(user.id);
   }
 
+  // Get applications for student
   @Get('applications/mine')
   @Roles(UserRole.STUDENT)
   getApplicationsForStudent(@GetUser() user: User) {
     return this.alumniService.getApplicationsForStudent(user.id);
   }
 
+  // Get accepted application count
   @Get('applications/accepted-count')
   @Roles(UserRole.ALUMNI)
   getAcceptedApplicationCount(@GetUser() user: User) {
     return this.alumniService.getAcceptedApplicationCount(user.id);
   }
 
+  // Respond to an application
   @Patch('applications/:id/respond')
   @Roles(UserRole.ALUMNI)
   respondToApplication(

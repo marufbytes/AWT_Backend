@@ -8,10 +8,7 @@ import { CreateReferralPostDto } from './dto/create-referral-post.dto';
 import { RespondReferralApplicationDto } from './dto/respond-referral-application.dto';
 import { ReferralApplicationStatus } from './enums/referral-application-status.enum';
 
-// A plain object shape (not the real `AlumniService` class) so
-// `@typescript-eslint/unbound-method` doesn't treat these jest mocks as
-// unbound class methods.
-interface MockAlumniService {
+interface FakeAlumniService {
   createReferralPost: Mock;
   getMyReferralPosts: Mock;
   getPendingReferralPosts: Mock;
@@ -26,7 +23,7 @@ interface MockAlumniService {
   respondToApplication: Mock;
 }
 
-const createMockService = (): MockAlumniService => ({
+const createFakeAlumniService = (): FakeAlumniService => ({
   createReferralPost: jest.fn(),
   getMyReferralPosts: jest.fn(),
   getPendingReferralPosts: jest.fn(),
@@ -45,16 +42,18 @@ const asAlumni = (id: number): User => ({ id, role: UserRole.ALUMNI }) as User;
 
 describe('AlumniController', () => {
   let controller: AlumniController;
-  let service: MockAlumniService;
+  let service: FakeAlumniService;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       controllers: [AlumniController],
-      providers: [{ provide: AlumniService, useValue: createMockService() }],
+      providers: [
+        { provide: AlumniService, useValue: createFakeAlumniService() },
+      ],
     }).compile();
 
     controller = module.get<AlumniController>(AlumniController);
-    service = module.get<MockAlumniService>(AlumniService);
+    service = module.get<FakeAlumniService>(AlumniService);
   });
 
   it('should be defined', () => {

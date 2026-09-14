@@ -14,9 +14,6 @@ import { User } from '../../user/entities/user.entity';
 import { ReferralPostStatus } from '../enums/referral-post-status.enum';
 import { ReferralApplication } from './referral-application.entity';
 
-// A referral an alumni has posted for a vacancy at their company. It is
-// created as PENDING and only becomes visible to students once an admin
-// approves it.
 @Entity('referral_posts')
 export class ReferralPost {
   @PrimaryGeneratedColumn()
@@ -56,12 +53,10 @@ export class ReferralPost {
   @UpdateDateColumn()
   updatedAt!: Date;
 
-  // The alumni who created this post.
   @ManyToOne(() => User, { nullable: false })
   @JoinColumn({ name: 'alumniId' })
   alumni!: User;
 
-  // Students the alumni pointed the company towards, ahead of any applications.
   @ManyToMany(() => User)
   @JoinTable({
     name: 'referral_post_suggested_students',
