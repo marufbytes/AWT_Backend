@@ -1,21 +1,53 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Internship } from './entities/internship.entity';
 import { CreateInternshipDto } from './dto/create-internship.dto';
 import { UpdateInternshipDto } from './dto/update-internship.dto';
+import { User, UserRole } from '../user/entities/user.entity';
 
 @Injectable()
 export class InternshipService {
   constructor(
     @InjectRepository(Internship) private readonly internshipRepo: Repository<Internship>,
-  ) {}
+    @InjectRepository(User)
+    private readonly userRepo: Repository<User>,
+  ) { }
 
-  async createInternship(createInternshipDto: CreateInternshipDto): Promise<Internship> {
-    const internship = this.internshipRepo.create({
-      ...createInternshipDto,
-      company: { id: createInternshipDto.companyId },
+  async createInternship(
+    dto: CreateInternshipDto,
+    user: User,
+  ): Promise<Internship> {
+    const currentUser = await this.userRepo.findOne({
+      where: {
+        id: user.id,
+      },
+      relations: {
+        company: true,
+      },
     });
+
+    if (!currentUser) {
+      throw new NotFoundException('User not found');
+    }
+
+    if (currentUser.role === UserRole.HR) {
+      if (!currentUser.company) {
+        throw new BadRequestException(
+          'HR is not associated with any company',
+        );
+      }
+
+      const internship = this.internshipRepo.create({
+        ...dto,
+        company: currentUser.company,
+      });
+
+      return await this.internshipRepo.save(internship);
+    }
+
+    const internship = this.internshipRepo.create(dto);
+
     return await this.internshipRepo.save(internship);
   }
 
@@ -36,10 +68,126 @@ export class InternshipService {
     });
   }
 
-  async getInternshipById(id: number): Promise<Internship | null> {
+
+  async getInternshipById(id: number): Promise<any> {
     const internship = await this.internshipRepo.findOne({
+      where: { id },
+      relations: {
+        company: true,
+        applications: true,
+      },
+      select: {
+        id: true,
+        title: true,
+        description: true,
+        requirements: true,
+        isActive: true,
+        company: {
+          id: true,
+          name: true,
+        },
+        applications: {
+          id: true,
+          status: true,
+        },
+      },
+    });
+
+    if (!internship) {
+      return null;
+    }
+
+    const apps = internship.applications || [];
+
+    const stats = {
+      total: apps.length,
+
+      pending: apps.filter(
+        (a: any) => a.status?.toLowerCase() === 'pending',
+      ).length,
+
+      reviewed: apps.filter(
+        (a: any) => a.status?.toLowerCase() === 'reviewed',
+      ).length,
+
+      interview: apps.filter(
+        (a: any) => a.status?.toLowerCase() === 'interview',
+      ).length,
+
+      accepted: apps.filter(
+        (a: any) => a.status?.toLowerCase() === 'accepted',
+      ).length,
+
+      rejected: apps.filter(
+        (a: any) => a.status?.toLowerCase() === 'rejected',
+      ).length,
+    };
+
+    const { applications, ...rest } = internship;
+
+    return {
+      ...rest,
+      stats,
+    };
+  }
+
+
+
+
+  async updateInternship(id: number, updateInternshipDto: UpdateInternshipDto): Promise<Internship> {
+    const internship = await this.internshipRepo.findOne({ where: { id } });
+    if (internship != null) {
+      Object.assign(internship, updateInternshipDto);
+      return await this.internshipRepo.save(internship);
+    } else {
+      throw new BadRequestException('internship not Found');
+    }
+  }
+
+
+
+  async toggleInternshipStatus(id: number): Promise<{ message: string; isActive: boolean }> {
+    const internship = await this.internshipRepo.findOne({ where: { id } });
+
+    if (!internship) {
+      throw new BadRequestException(`Internship with id ${id} not found`);
+    }
+
+    internship.isActive = !internship.isActive;
+    await this.internshipRepo.save(internship);
+
+    return {
+      message: `Internship ${internship.isActive ? 'activated' : 'deactivated'} successfully`,
+      isActive: internship.isActive,
+    };
+  }
+
+
+
+  async deleteInternship(id: number): Promise<string> {
+    const result = await this.internshipRepo.delete(id);
+
+    if (result.affected == 0) {
+      return `internship not found`;
+    }
+    return `internship deleted with id ${id}`;
+  }
+
+
+
+  async getInternshipsByCompany(user: User): Promise<Internship[]> {
+    const currentUser = await this.userRepo.findOne({
+      where: { id: user.id },
+      relations: { company: true },
+    });
+
+    if (!currentUser || !currentUser.company) {
+      return [];
+    }
+
+    return await this.internshipRepo.find({
       where: {
-        id: id,
+        company: { id: currentUser.company.id }
       },
       relations: { company: true },
       select: {
@@ -54,26 +202,5 @@ export class InternshipService {
         },
       },
     });
-
-    return internship;
-  }
-
-  async updateInternship(id: number, updateInternshipDto: UpdateInternshipDto): Promise<Internship> {
-    const internship = await this.getInternshipById(id);
-    if (internship != null) {
-      Object.assign(internship, updateInternshipDto);
-      return await this.internshipRepo.save(internship);
-    } else {
-      throw new BadRequestException('internship not Found');
-    }
-  }
-
-  async deleteInternship(id: number): Promise<string> {
-    const result = await this.internshipRepo.delete(id);
-
-    if (result.affected == 0) {
-      return `internship not found`;
-    }
-    return `internship deleted with id ${id}`;
   }
 }

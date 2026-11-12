@@ -1,5 +1,6 @@
 import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, ManyToOne, JoinColumn } from 'typeorm';
 import { Application } from '../application/entities/application.entity';
+import { InterviewStatus } from '../common/enums/InterviewStatus.enum';
 
 @Entity('interviews')
 export class Interview {
@@ -12,11 +13,18 @@ export class Interview {
   @Column({ type: 'timestamp' })
   scheduledDate: Date;
 
-  @Column()
+  @Column({
+    nullable:true
+  })
   meetingLink: string;
 
-  @Column({ default: 'SCHEDULED' })
-  status: string;
+  
+  @Column({
+    type: 'enum',
+    enum: InterviewStatus,
+    default: InterviewStatus.SCHEDULED,
+  })
+  status: InterviewStatus;
 
   @ManyToOne(() => Application, (application) => application.interviews, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'applicationId' })

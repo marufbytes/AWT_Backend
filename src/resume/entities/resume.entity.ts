@@ -37,10 +37,11 @@ export class Resume {
   updateDate: Date;
 
   @ManyToOne(() => User, user => user.resumes)
-  @JoinColumn()
+  @JoinColumn({ name: 'studentId' })
   student: User; 
 
   @OneToMany(()=>Application,(app)=>app.resume)
   applications:Application[];
   
 }
+

@@ -10,15 +10,24 @@ import { ApplicationModule } from './application/application.module';
 import { AuthModule } from './auth/auth.module';
 import { InterviewsModule } from './interview/interview.module';
 import { MailModule } from './mail/mail.module';
+import { UploadsController } from './uploads/uploads.controller';
+import { ConfigModule } from '@nestjs/config';
 
 @Module({
   imports: [
+    ConfigModule.forRoot({
+      isGlobal: true,
+    }),
     TypeOrmModule.forRoot({
       type: "postgres",
       host: "localhost",
       port: 5432,
       username: "postgres",
+<<<<<<< HEAD
       password:'1234',
+=======
+      password: 'admin123',
+>>>>>>> 7505de0 (Update for student)
       database: "internnova_db",
       autoLoadEntities: true,
       synchronize: true,
@@ -31,8 +40,9 @@ import { MailModule } from './mail/mail.module';
     AuthModule,
     InterviewsModule,
     MailModule,
+
   ],
-  controllers: [AppController],
+  controllers: [AppController, UploadsController],
   providers: [AppService],
 })
-export class AppModule {}
+export class AppModule { }

@@ -8,19 +8,18 @@ import { User, UserRole } from '../user/entities/user.entity';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { GetUser } from '../auth/decorators/get-user.decorator';
 
-@UseGuards(JwtAuthGuard,RolesGuard)
+@UseGuards(JwtAuthGuard)
 @Controller('company')
 export class CompanyController {
   constructor(private readonly companyService: CompanyService) { }
 
 
+
   @Post()
-  @Roles(UserRole.HR,UserRole.ADMIN)
-
+  @UseGuards(RolesGuard)
+  @Roles(UserRole.ADMIN)
   create(@Body() dto: CreateCompanyDto) {
-
     return this.companyService.createCompany(dto);
-
   }
 
   @Get()
@@ -33,24 +32,42 @@ export class CompanyController {
   }
 
 
+  @Get('my')
+  @UseGuards(JwtAuthGuard)
+  getMyCompany(@GetUser() user: User) {
+    return this.companyService.getMyCompany(user.id);
+  }
+
+  @Get('my/search')
+  searchCompanyApplications(
+    @GetUser() user: User,
+    @Query('q') query?: string,
+  ) {
+    return this.companyService.searchCompanyApplications(user.id, query);
+  }
+  
+
+
   @Get(':id')
   findOne(@Param('id', ParseIntPipe) id: number) {
     return this.companyService.findOne(id);
   }
 
   @Patch(':id')
-  @Roles(UserRole.HR,UserRole.ADMIN)
+  @UseGuards(RolesGuard)
+  @Roles(UserRole.HR, UserRole.ADMIN)
   update(
     @Param('id', ParseIntPipe) id: number,
     @Body() dto: UpdateCompanyDto,
-    @GetUser() user:User
-  ) 
-  {
+    @GetUser() user: User
+  ) {
     return this.companyService.update(id, dto, user);
   }
 
 
   @Patch(':id/verify')
+  @UseGuards(RolesGuard)
+
   @Roles(UserRole.ADMIN)
   verify(@Param('id', ParseIntPipe) id: number) {
     return this.companyService.verify(id);
@@ -58,7 +75,11 @@ export class CompanyController {
 
 
 
+
+
   @Delete(':id')
+  @UseGuards(RolesGuard)
+
   @Roles(UserRole.ADMIN)
 
   remove(@Param('id', ParseIntPipe) id: number) {
@@ -67,10 +88,14 @@ export class CompanyController {
 
 
   @Patch(':id/restore')
+  @UseGuards(RolesGuard)
+
   @Roles(UserRole.ADMIN)
   restore(@Param('id', ParseIntPipe) id: number) {
     return this.companyService.restoreCompany(id);
   }
+
+
 
 
 }

@@ -19,7 +19,7 @@ export class CreateUserDto {
   phone?: string;
 
   @IsString()
-  @MinLength(8)
+  @MinLength(8, { message: 'Password must be at least 8 characters long' })
   @MaxLength(32)
   @Matches(/^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$/, {
     message: 'Password must contain at least one letter and one number',
@@ -29,6 +29,14 @@ export class CreateUserDto {
   @IsNotEmpty({ message: 'Role is required' })
   @IsEnum(UserRole, { message: 'Invalid user role' })
   role: UserRole;
+
+  @IsString()
+  @IsOptional()
+  companyName?: string;
+
+  @IsString()
+  @IsOptional()
+  industry?: string;
 
   @IsString()
   @IsOptional()

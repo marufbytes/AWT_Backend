@@ -1,51 +1,79 @@
-import { Column, CreateDateColumn, DeleteDateColumn, Entity, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
-import { Internship } from "../../internship/entities/internship.entity";
-import { User } from "../../user/entities/user.entity";
+import {
+  Column,
+  CreateDateColumn,
+  DeleteDateColumn,
+  Entity,
+  OneToMany,
+  PrimaryGeneratedColumn,
+  UpdateDateColumn,
+} from 'typeorm';
+
+import { Internship } from '../../internship/entities/internship.entity';
+import { User } from '../../user/entities/user.entity';
 
 @Entity()
 export class Company {
-    @PrimaryGeneratedColumn()
-    id: number;
+  @PrimaryGeneratedColumn()
+  id: number;
 
-    @Column({
-        type: 'varchar',
-        length: 100,
-        unique: true,
-    })
-    name: string;
+  @Column({
+    type: 'varchar',
+    length: 30,
+    unique: true,
+  })
+  name: string;
 
-    @Column({
-        type: 'varchar',
-        length: 50
-    })
-    industry: string;
+  @Column({
+    type: 'varchar',
+    length: 50,
+  })
+  industry: string;
 
-    @Column({
-        type: 'varchar',
-        length: 500,
-        nullable: true
-    })
-    description: string;
+  @Column({
+    type: 'text',
+    nullable: true,
+  })
+  description: string;
 
-    @Column({
-        type: Boolean,
-        default: false,
-    })
-    isVerified: boolean;
+  @Column({
+    type: 'varchar',
+    length: 150,
+    nullable: true,
+  })
+  location: string;
 
-    @CreateDateColumn()
-    createdAt: Date;
+  @Column({
+    type: 'varchar',
+    length: 30,
+    nullable: true,
+  })
+  email: string;
 
-    @UpdateDateColumn()
-    updatedAt: Date;
+  @Column({
+    type: 'varchar',
+    length: 11,
+    nullable: true,
+  })
+  phone: string;
 
-    @DeleteDateColumn()
-    deletedAt:Date;
+  @Column({
+    type: Boolean,
+    default: false,
+  })
+  isVerified: boolean;
 
-    @OneToMany(() => User, user => user.company)
-    users: User[];
+  @CreateDateColumn()
+  createdAt: Date;
 
-    @OneToMany(() => Internship, (internship) => internship.company)
-    internships: Internship[];
+  @UpdateDateColumn()
+  updatedAt: Date;
+
+  @DeleteDateColumn()
+  deletedAt: Date;
+
+  @OneToMany(() => User, (user) => user.company)
+  users: User[];
+
+  @OneToMany(() => Internship, (internship) => internship.company)
+  internships: Internship[];
 }
-

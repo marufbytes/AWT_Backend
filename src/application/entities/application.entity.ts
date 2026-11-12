@@ -5,6 +5,7 @@ import { User } from "../../user/entities/user.entity";
 import { Internship } from "../../internship/entities/internship.entity";
 import { Resume } from "../../resume/entities/resume.entity";
 import { Interview } from "../../interview/interview.entity";
+import { IsEmail, IsOptional } from "class-validator";
 
 @Entity()
 export class Application {
@@ -55,6 +56,13 @@ export class Application {
 
     @OneToMany(() => Interview, (interview) => interview.application)
     interviews: Interview[];
+
+
+    @Column({ type: 'varchar',nullable: true, select: false })
+    approvalTokenHash: string | null;
+
+    @Column({ type: 'timestamp', nullable: true })
+    approvalTokenExpiresAt: Date | null;
 
 
 }

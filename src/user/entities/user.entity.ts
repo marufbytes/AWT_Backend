@@ -1,4 +1,14 @@
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, DeleteDateColumn, OneToMany, JoinColumn, ManyToOne } from 'typeorm';
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  CreateDateColumn,
+  UpdateDateColumn,
+  DeleteDateColumn,
+  OneToMany,
+  JoinColumn,
+  ManyToOne,
+} from 'typeorm';
 import { Resume } from '../../resume/entities/resume.entity';
 import { Company } from '../../company/entities/company.entity';
 import { Application } from '../../application/entities/application.entity';
@@ -30,7 +40,6 @@ export class User {
   @Column()
   passwordHash: string;
 
-
   @Column({ type: 'enum', enum: UserRole })
   role: UserRole;
 
@@ -61,4 +70,10 @@ export class User {
 
   @DeleteDateColumn()
   deletedAt: Date;
+
+  @Column({ nullable: true })
+  companyName: string;
+
+  @Column({ nullable: true })
+  industry: string;
 }
