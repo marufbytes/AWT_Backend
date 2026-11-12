@@ -24,6 +24,12 @@ export class ApplicationController {
   }
 
 
+  @Get('my')
+  @Roles(UserRole.STUDENT)
+  findMyApplications(@GetUser() user: User) {
+    return this.applicationService.findStudentApplications(user.id);
+  }
+
 
   @Get('company')
   @Roles(UserRole.HR, UserRole.ADMIN)

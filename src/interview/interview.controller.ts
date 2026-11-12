@@ -5,8 +5,9 @@ import { InterviewService } from './interview.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
-import { UserRole } from '../user/entities/user.entity';
+import { User, UserRole } from '../user/entities/user.entity';
 import { CompleteInterviewDto } from './dto/complete-interview.dto';
+import { GetUser } from '../auth/decorators/get-user.decorator';
 
 @Controller('interviews')
 export class InterviewController {
@@ -18,6 +19,14 @@ export class InterviewController {
   @Roles(UserRole.HR, UserRole.ADMIN)
   create(@Body() createInterviewDto: CreateInterviewDto) {
     return this.interviewsService.create(createInterviewDto);
+  }
+
+
+  @Get('company')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.HR, UserRole.ADMIN)
+  getInterviewsByCompany(@GetUser() user: User) {
+    return this.interviewsService.getInterviewsByCompany(user);
   }
 
 
@@ -50,6 +59,14 @@ export class InterviewController {
     @Param('id', ParseIntPipe) id: number,
   ) {
     return this.interviewsService.remove(id);
+  }
+
+
+  @Get('student/my')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.STUDENT)
+  findStudentInterviews(@GetUser() user: User) {
+    return this.interviewsService.findStudentInterviews(user.id);
   }
 
 

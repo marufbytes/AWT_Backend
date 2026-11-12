@@ -1,4 +1,4 @@
-import { IsEnum, IsInt, IsNotEmpty, IsOptional, IsPositive } from "class-validator";
+import { IsEmail, IsEnum, IsInt, IsNotEmpty, IsOptional, IsPositive } from "class-validator";
 import { ApplicationType } from "../../common/enums/application-type.enum";
 
 export class CreateApplicationDto {
@@ -21,5 +21,11 @@ export class CreateApplicationDto {
   @IsPositive()
   @IsOptional()
   referredById?: number;
+
+  
+
+  @IsOptional()
+  @IsEmail()
+  alumniEmail?: string;
   
 }

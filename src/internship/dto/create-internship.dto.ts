@@ -15,8 +15,5 @@ export class CreateInternshipDto {
   @IsNotEmpty()
   requirements: string;
 
-  @IsInt()
-  @IsNotEmpty()
-  @Type(() => Number)
-  companyId: number;
+
 }

@@ -9,6 +9,7 @@ import { Application } from '../application/entities/application.entity';
 import { ApplicationStatus } from '../common/enums/application-status.enum';
 import { InterviewStatus } from '../common/enums/InterviewStatus.enum';
 import { CompleteInterviewDto } from './dto/complete-interview.dto';
+import { User } from '../user/entities/user.entity';
 
 @Injectable()
 export class InterviewService {
@@ -18,6 +19,8 @@ export class InterviewService {
 
     @InjectRepository(Application)
     private readonly applicationRepository: Repository<Application>,
+    @InjectRepository(User)
+    private readonly userRepository: Repository<User>,
   ) { }
 
   async create(createInterviewDto: CreateInterviewDto): Promise<Interview> {
@@ -84,6 +87,10 @@ export class InterviewService {
       applicationId: interview.applicationId,
     }));
   }
+
+
+
+
 
   async findOne(id: number): Promise<Interview> {
     const interview = await this.interviewRepository.findOne({
@@ -167,4 +174,64 @@ export class InterviewService {
 
     return await this.findOne(id);
   }
+
+
+
+  async getInterviewsByCompany(user: User) {
+    const currentUser = await this.userRepository.findOne({
+      where: { id: user.id },
+      relations: { company: true },
+    });
+
+    if (!currentUser || !currentUser.company) {
+      return [];
+    }
+
+    return await this.interviewRepository.find({
+      where: {
+        application: {
+          internship: {
+            company: {
+              id: currentUser.company.id,
+            },
+          },
+        },
+      },
+      relations: {
+        application: {
+          student: true,
+          internship: {
+            company: true,
+          },
+        },
+      },
+    });
+  }
+
+
+
+
+async findStudentInterviews(studentId: number) {
+  return await this.interviewRepository.find({
+    where: {
+      application: {
+        student: {
+          id: studentId,
+        },
+      },
+    },
+    relations: {
+      application: {
+        internship: {
+          company: true,
+        },
+      },
+    },
+    order: {
+      scheduledDate: 'ASC', 
+    },
+  });
+}
+
+
 }

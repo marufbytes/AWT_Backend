@@ -9,9 +9,11 @@ import { InternshipModule } from '../internship/internship.module';
 import { ResumeModule } from '../resume/resume.module';
 import { AuthModule } from '../auth/auth.module';
 import { User } from '../user/entities/user.entity';
+import { mainModule } from 'process';
+import { MailModule } from '../mail/mail.module';
 
 @Module({
-  imports:[TypeOrmModule.forFeature([Application,User]),UsersModule,InternshipModule,ResumeModule,AuthModule],
+  imports:[TypeOrmModule.forFeature([Application,User]),UsersModule,InternshipModule,ResumeModule,AuthModule,MailModule],
   controllers: [ApplicationController],
   providers: [ApplicationService],
   exports:[ApplicationService]

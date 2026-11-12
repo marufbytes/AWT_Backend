@@ -77,11 +77,23 @@ export class UsersController {
     return this.usersService.update(req.user.id, updateUserDto);
   }
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> 7505de0 (Update for student)
   @Patch('change-password')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.ADMIN)
   changePassword(@Req() req, @Body() dto: { currentPassword: string; newPassword: string }) {
+<<<<<<< HEAD
     return this.usersService.changePassword(req.user.id, dto.currentPassword, dto.newPassword);
+=======
+    return this.usersService.changePassword(
+      req.user.id,
+      dto.currentPassword,
+      dto.newPassword
+    );
+>>>>>>> 7505de0 (Update for student)
   }
 
   @Patch(':id')
@@ -125,4 +137,11 @@ export class UsersController {
   remove(@Param('id', ParseIntPipe) id: number) {
     return this.usersService.remove(id);
   }
+<<<<<<< HEAD
 }
+=======
+
+
+
+}
+>>>>>>> 7505de0 (Update for student)

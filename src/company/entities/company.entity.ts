@@ -1,6 +1,15 @@
-import { Column, CreateDateColumn, DeleteDateColumn, Entity, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
-import { Internship } from "../../internship/entities/internship.entity";
-import { User } from "../../user/entities/user.entity";
+import {
+  Column,
+  CreateDateColumn,
+  DeleteDateColumn,
+  Entity,
+  OneToMany,
+  PrimaryGeneratedColumn,
+  UpdateDateColumn,
+} from 'typeorm';
+
+import { Internship } from '../../internship/entities/internship.entity';
+import { User } from '../../user/entities/user.entity';
 
 @Entity()
 export class Company {
@@ -9,41 +18,41 @@ export class Company {
 
   @Column({
     type: 'varchar',
-    length: 100,
+    length: 30,
     unique: true,
   })
   name: string;
 
   @Column({
     type: 'varchar',
-    length: 50
+    length: 50,
   })
   industry: string;
 
   @Column({
     type: 'text',
-    nullable: true
+    nullable: true,
   })
-  description: string; // এটিই 'About' হিসেবে ব্যবহৃত হবে
+  description: string;
 
   @Column({
     type: 'varchar',
     length: 150,
-    nullable: true
+    nullable: true,
   })
   location: string;
 
   @Column({
     type: 'varchar',
-    length: 150,
-    nullable: true
+    length: 30,
+    nullable: true,
   })
-  email: string; // Website তুলে Email যোগ করা হলো
+  email: string;
 
   @Column({
     type: 'varchar',
-    length: 30,
-    nullable: true
+    length: 11,
+    nullable: true,
   })
   phone: string;
 
@@ -62,7 +71,7 @@ export class Company {
   @DeleteDateColumn()
   deletedAt: Date;
 
-  @OneToMany(() => User, user => user.company)
+  @OneToMany(() => User, (user) => user.company)
   users: User[];
 
   @OneToMany(() => Internship, (internship) => internship.company)
