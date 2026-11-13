@@ -129,23 +129,15 @@ export class UsersService {
     return updatedUser;
   }
 
-<<<<<<< HEAD
-=======
 
 
 
->>>>>>> 7505de0 (Update for student)
   async changePassword(
     id: number,
     currentPassword: string,
     newPassword: string,
   ): Promise<{ message: string }> {
-<<<<<<< HEAD
-    const user = await this.usersRepo
-      .createQueryBuilder('user')
-=======
     const user = await this.usersRepo.createQueryBuilder('user')
->>>>>>> 7505de0 (Update for student)
       .addSelect('user.passwordHash')
       .where('user.id = :id', { id })
       .getOne();
@@ -178,21 +170,14 @@ export class UsersService {
 
     return { message: 'Password updated successfully' };
   }
-<<<<<<< HEAD
-=======
 
 
->>>>>>> 7505de0 (Update for student)
 
   async remove(id: number): Promise<void> {
     await this.findOne(id);
     await this.usersRepo.softDelete(id);
   }
-<<<<<<< HEAD
-}
-=======
 
 
 }
 
->>>>>>> 7505de0 (Update for student)
