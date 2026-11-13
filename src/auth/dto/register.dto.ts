@@ -5,6 +5,7 @@ import {
   MinLength,
   IsOptional,
   IsEnum,
+  IsIn,
   Matches,
 } from 'class-validator';
 
@@ -36,9 +37,12 @@ export class RegisterDto {
   })
   password: string;
 
+  @IsIn([UserRole.STUDENT, UserRole.ALUMNI, UserRole.HR], {
+    message: 'Role must be one of STUDENT, ALUMNI, HR',
+  })
   @IsEnum(UserRole, {
     message:
-      'Role must be a valid UserRole enum (e.g. STUDENT, ALUMNI, HR, ADMIN)',
+      'Role must be a valid UserRole enum (e.g. STUDENT, ALUMNI, HR)',
   })
   @IsNotEmpty({ message: 'Role is required' })
   role: UserRole;

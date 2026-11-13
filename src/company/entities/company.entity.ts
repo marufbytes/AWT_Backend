@@ -19,7 +19,7 @@ export class Company {
   @Column({
     type: 'varchar',
     length: 30,
-    unique: true,
+    default: 'Unknown Company',
   })
   name: string;
 

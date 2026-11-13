@@ -8,6 +8,7 @@ import {
 
 import { Repository } from 'typeorm';
 import { Application } from './entities/application.entity';
+import { Internship } from '../internship/entities/internship.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { ResumeService } from '../resume/resume.service';
 import { InternshipService } from '../internship/internship.service';
@@ -244,15 +245,118 @@ export class ApplicationService {
     return await this.applicationRepo.save(app);
   }
 
-  async findAllApplications(): Promise<Application[]> {
-    return await this.applicationRepo.find({
+  private async getHrCompanyId(user: User): Promise<number | null> {
+    const currentUser = await this.userRepo.findOne({
+      where: { id: user.id },
+      relations: { company: true },
+    });
+    return currentUser?.company?.id ?? null;
+  }
+
+  /**
+   * Role-scoped listing:
+   * ADMIN -> everything, HR -> own company's applications,
+   * STUDENT / ALUMNI -> only their own applications.
+   */
+  async findAllApplications(user: User): Promise<Application[]> {
+    const relations = {
+      student: true,
+      internship: { company: true },
+      resume: true,
+      referredBy: true,
+    };
+
+    if (user.role === UserRole.ADMIN) {
+      return await this.applicationRepo.find({
+        relations,
+        order: { createdAt: 'DESC' },
+      });
+    }
+
+    if (user.role === UserRole.HR) {
+      const companyId = await this.getHrCompanyId(user);
+      if (companyId === null) {
+        return [];
+      }
+      return await this.applicationRepo.find({
+        where: { internship: { company: { id: companyId } } },
+        relations,
+        order: { createdAt: 'DESC' },
+      });
+    }
+
+    if (user.role === UserRole.ALUMNI) {
+      return await this.applicationRepo.find({
+        where: [
+          { student: { id: user.id } },
+          { referredBy: { id: user.id } },
+        ],
+        relations,
+        order: { createdAt: 'DESC' },
+      });
+    }
+
+    if (user.role === UserRole.STUDENT) {
+      return await this.applicationRepo.find({
+        where: { student: { id: user.id } },
+        relations,
+        order: { createdAt: 'DESC' },
+      });
+    }
+
+    throw new ForbiddenException('You are not allowed to view applications');
+  }
+
+  /**
+   * Reads one application only if the caller is ADMIN, owns it,
+   * or is HR of the company the application belongs to.
+   */
+  async findByIdForUser(id: number, user: User): Promise<Application> {
+    const application = await this.applicationRepo.findOne({
+      where: { id },
       relations: {
         student: true,
-        internship: true,
+        internship: { company: true },
         resume: true,
         referredBy: true,
+        interviews: true,
       },
     });
+
+    if (!application) {
+      throw new NotFoundException(
+        `Application with ID ${id} was not found.`,
+      );
+    }
+
+    if (user.role === UserRole.ADMIN) {
+      return application;
+    }
+
+    if (application.student?.id === user.id) {
+      return application;
+    }
+
+    if (
+      user.role === UserRole.ALUMNI &&
+      application.referredBy?.id === user.id
+    ) {
+      return application;
+    }
+
+    if (user.role === UserRole.HR) {
+      const companyId = await this.getHrCompanyId(user);
+      if (
+        companyId !== null &&
+        application.internship?.company?.id === companyId
+      ) {
+        return application;
+      }
+    }
+
+    throw new ForbiddenException(
+      'You are not allowed to view this application',
+    );
   }
 
   async findCompanyApplications(
@@ -355,8 +459,36 @@ export class ApplicationService {
   async updateStatus(
     dto: UpdateApplicationDto,
     id: number,
+    user: User,
   ): Promise<Application> {
     const application = await this.findById(id);
+
+    // HR can only update applications for internships of their own company.
+    // ADMIN bypasses this check.
+    if (user.role !== UserRole.ADMIN) {
+      const [currentUser, owningInternship] = await Promise.all([
+        this.userRepo.findOne({
+          where: { id: user.id },
+          relations: { company: true },
+        }),
+        this.applicationRepo.manager
+          .getRepository(Internship)
+          .findOne({
+            where: { id: application.internship?.id },
+            relations: { company: true },
+          }),
+      ]);
+
+      if (
+        !currentUser?.company ||
+        !owningInternship?.company ||
+        owningInternship.company.id !== currentUser.company.id
+      ) {
+        throw new ForbiddenException(
+          'You can only update applications for your own company',
+        );
+      }
+    }
 
     // Case-insensitive Enum matching
     const inputStatus = String(dto.status).toLowerCase();
@@ -373,6 +505,14 @@ export class ApplicationService {
     application.status = matchedStatus;
 
     return await this.applicationRepo.save(application);
+  }
+
+  async adminRemoveApplication(id: number): Promise<{ message: string }> {
+    await this.findById(id);
+    await this.applicationRepo.delete(id);
+    return {
+      message: `Application ID ${id} has been deleted by admin.`,
+    };
   }
 
   async removeApplication(

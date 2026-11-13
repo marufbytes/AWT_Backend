@@ -55,18 +55,19 @@ export class ApplicationController {
 
 
   @Get()
-  @Roles(UserRole.HR, UserRole.ADMIN)
-  findAllApplications() {
+  @Roles(UserRole.STUDENT, UserRole.ALUMNI, UserRole.HR, UserRole.ADMIN)
+  findAllApplications(@GetUser() user: User) {
 
-    return this.applicationService.findAllApplications();
+    return this.applicationService.findAllApplications(user);
 
   }
 
 
 
   @Get(':id')
-  findById(@Param('id', ParseIntPipe) id: number) {
-    return this.applicationService.findById(id);
+  @Roles(UserRole.STUDENT, UserRole.ALUMNI, UserRole.HR, UserRole.ADMIN)
+  findById(@Param('id', ParseIntPipe) id: number, @GetUser() user: User) {
+    return this.applicationService.findByIdForUser(id, user);
   }
 
 
@@ -74,19 +75,23 @@ export class ApplicationController {
   @Roles(UserRole.ADMIN, UserRole.HR)
   updateStatus(
     @Param('id', ParseIntPipe) id: number,
-    @Body() dto: UpdateApplicationDto
+    @Body() dto: UpdateApplicationDto,
+    @GetUser() user: User
   ) {
-    return this.applicationService.updateStatus(dto, id);
+    return this.applicationService.updateStatus(dto, id, user);
   }
 
 
 
   @Delete(':id')
-  @Roles(UserRole.STUDENT)
+  @Roles(UserRole.STUDENT, UserRole.ADMIN)
   deleteApplication(
     @Param('id', ParseIntPipe) id: number,
     @GetUser() user: User
   ) {
+    if (user.role === UserRole.ADMIN) {
+      return this.applicationService.adminRemoveApplication(id);
+    }
     return this.applicationService.removeApplication(id, user.id)
   }
 

@@ -3,10 +3,11 @@ import {
   NotFoundException,
   BadRequestException,
   ConflictException,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
-import { User, UserRole } from './entities/user.entity';
+import { ILike, Repository } from 'typeorm';
+import { HrApprovalStatus, User, UserRole } from './entities/user.entity';
 import { Company } from '../company/entities/company.entity';
 import * as bcrypt from 'bcrypt';
 import { MailService } from '../mail/mail.service';
@@ -66,6 +67,10 @@ export class UsersService {
     const newUser = this.usersRepo.create({
       ...userEntityData,
       passwordHash,
+      hrApprovalStatus:
+        userData.role === UserRole.HR
+          ? HrApprovalStatus.PENDING
+          : HrApprovalStatus.APPROVED,
       company: companyEntity || undefined,
     } as Partial<User>);
 
@@ -129,6 +134,44 @@ export class UsersService {
     return updatedUser;
   }
 
+  async updateProfile(
+    id: number,
+    updateData: Partial<User>,
+    companyId?: number,
+    companyName?: string,
+  ): Promise<User> {
+    const patch: Partial<User> = { ...updateData };
+    const currentUser = await this.findOne(id);
+
+    if (companyName?.trim() && currentUser.role === UserRole.ALUMNI) {
+      const normalizedName = companyName.trim();
+      let company = await this.companyRepo.findOne({
+        where: { name: ILike(normalizedName) },
+      });
+
+      if (!company) {
+        company = this.companyRepo.create({
+          name: normalizedName,
+          industry: 'General',
+        });
+        company = await this.companyRepo.save(company);
+      }
+      patch.company = company;
+    } else if (companyId !== undefined) {
+      const company = await this.companyRepo.findOne({ where: { id: companyId } });
+      if (!company) throw new NotFoundException('Company not found');
+      patch.company = company;
+    }
+      Object.assign(currentUser, patch);
+      const updatedUser = await this.usersRepo.save(currentUser);
+      if (updatedUser.email) {
+        this.mailService
+          .sendProfileUpdateEmail(updatedUser.email, updatedUser.firstName || 'User')
+          .catch((error) => console.error('Failed to send update email:', error));
+      }
+      return this.findOne(updatedUser.id);
+  }
+
 
 
 
@@ -172,6 +215,42 @@ export class UsersService {
   }
 
 
+
+  /**
+   * Throws if the account is not allowed to log in / use the API:
+   * deactivated users, and HR users that are not APPROVED.
+   */
+  assertAccountAccess(user: User): void {
+    if (user.isActive === false) {
+      throw new UnauthorizedException('Account is deactivated');
+    }
+    if (user.role === UserRole.HR) {
+      if (user.hrApprovalStatus === HrApprovalStatus.PENDING) {
+        throw new UnauthorizedException('Your account is pending approval');
+      }
+      if (user.hrApprovalStatus === HrApprovalStatus.REJECTED) {
+        throw new UnauthorizedException('Account rejected');
+      }
+    }
+  }
+
+  async toggleStatus(id: number): Promise<User> {
+    const user = await this.findOne(id);
+    if (user.role === UserRole.ADMIN) {
+      throw new BadRequestException('Admin accounts cannot be deactivated');
+    }
+    await this.usersRepo.update(id, { isActive: !user.isActive });
+    return await this.findOne(id);
+  }
+
+  async setHrApproval(id: number, status: HrApprovalStatus): Promise<User> {
+    const user = await this.findOne(id);
+    if (user.role !== UserRole.HR) {
+      throw new BadRequestException('User is not an HR account');
+    }
+    await this.usersRepo.update(id, { hrApprovalStatus: status });
+    return await this.findOne(id);
+  }
 
   async remove(id: number): Promise<void> {
     await this.findOne(id);

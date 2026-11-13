@@ -12,12 +12,19 @@ import {
 import { Resume } from '../../resume/entities/resume.entity';
 import { Company } from '../../company/entities/company.entity';
 import { Application } from '../../application/entities/application.entity';
+import { Internship } from '../../internship/entities/internship.entity';
 
 export enum UserRole {
   STUDENT = 'STUDENT',
   ALUMNI = 'ALUMNI',
   HR = 'HR',
   ADMIN = 'ADMIN',
+}
+
+export enum HrApprovalStatus {
+  PENDING = 'PENDING',
+  APPROVED = 'APPROVED',
+  REJECTED = 'REJECTED',
 }
 
 @Entity('users')
@@ -46,6 +53,16 @@ export class User {
   @Column({ nullable: true })
   profilePictureUrl: string;
 
+  @Column({ type: 'boolean', default: true })
+  isActive: boolean;
+
+  @Column({
+    type: 'enum',
+    enum: HrApprovalStatus,
+    default: HrApprovalStatus.APPROVED,
+  })
+  hrApprovalStatus: HrApprovalStatus;
+
   @Column({ nullable: true })
   hashedRefreshToken: string;
 
@@ -62,6 +79,9 @@ export class User {
   @OneToMany(() => Application, (app) => app.referredBy)
   referrals: Application[];
 
+  @OneToMany(() => Internship, (internship) => internship.creator)
+  createdInternships: Internship[];
+
   @CreateDateColumn()
   createdAt: Date;
 
@@ -76,4 +96,16 @@ export class User {
 
   @Column({ nullable: true })
   industry: string;
+
+  @Column({ nullable: true })
+  designation: string;
+
+  @Column({ nullable: true })
+  linkedin: string;
+
+  @Column({ type: 'int', nullable: true })
+  gradYear: number;
+
+  @Column({ type: 'text', nullable: true })
+  bio: string;
 }

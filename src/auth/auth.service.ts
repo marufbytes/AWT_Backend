@@ -2,6 +2,7 @@ import {
   Injectable,
   UnauthorizedException,
   BadRequestException,
+  ForbiddenException,
 } from '@nestjs/common';
 
 import { JwtService } from '@nestjs/jwt';
@@ -13,6 +14,7 @@ import { Company } from '../company/entities/company.entity';
 
 import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register.dto';
+import { ResetPasswordDto } from './dto/reset-password.dto';
 
 import { UserRole } from '../user/entities/user.entity';
 
@@ -25,6 +27,12 @@ export class AuthService {
   ) {}
 
   async register(registerDto: RegisterDto) {
+    // Defense in depth: public registration can never create an ADMIN
+    if (registerDto.role === UserRole.ADMIN) {
+      throw new ForbiddenException(
+        'Admin accounts cannot be created through public registration',
+      );
+    }
     // Check if email already exists
     const existingUser = await this.usersService.findByEmail(
       registerDto.email,
@@ -113,6 +121,8 @@ export class AuthService {
       );
     }
 
+    this.usersService.assertAccountAccess(user);
+
     const tokens = await this.generateTokens(
       user.id,
       user.email,
@@ -147,6 +157,27 @@ export class AuthService {
     return {
       message: 'Logged out successfully',
     };
+  }
+
+  async resetPassword(dto: ResetPasswordDto): Promise<{ message: string }> {
+    const email = dto.email.trim().toLowerCase();
+    const newPassword = dto.newPassword ?? dto.password;
+    if (!newPassword) {
+      throw new BadRequestException('A new password is required');
+    }
+
+    const user = await this.usersService.findByEmail(email);
+    if (!user) {
+      throw new BadRequestException('No user found with this email address');
+    }
+
+    const passwordHash = await bcrypt.hash(newPassword, 10);
+    await this.usersService.update(user.id, {
+      passwordHash,
+      hashedRefreshToken: null,
+    } as any);
+
+    return { message: 'Password reset successfully' };
   }
 
   private async generateTokens(

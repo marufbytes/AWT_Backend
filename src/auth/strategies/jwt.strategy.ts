@@ -34,6 +34,8 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
       throw new UnauthorizedException('User no longer exists');
     }
 
+    this.usersService.assertAccountAccess(user);
+
     return user;
   }
 }

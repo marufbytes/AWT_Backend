@@ -31,11 +31,15 @@ export class InterviewController {
 
 
   @Get()
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.HR, UserRole.ADMIN)
   findAll(@Query('status') status?: string) {
     return this.interviewsService.findAll(status);
   }
 
   @Get(':id')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.HR, UserRole.ADMIN)
   findOne(@Param('id', ParseIntPipe) id: number) {
     return this.interviewsService.findOne(id);
   }

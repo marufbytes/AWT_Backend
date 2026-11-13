@@ -15,7 +15,7 @@ export class InternshipController {
 
   @Post()
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(UserRole.HR, UserRole.ADMIN)
+  @Roles(UserRole.HR, UserRole.ALUMNI, UserRole.ADMIN)
   createInternship(
     @Body() createInternshipDto: CreateInternshipDto,
     @GetUser() user: User,
@@ -27,13 +27,15 @@ export class InternshipController {
   }
 
   @Get()
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.STUDENT, UserRole.ALUMNI, UserRole.HR, UserRole.ADMIN)
   getAllInternships(): Promise<Internship[]> {
     return this.internshipService.getAllInternships();
   }
 
   @Get('company')
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(UserRole.HR, UserRole.ADMIN)
+  @Roles(UserRole.HR, UserRole.ALUMNI, UserRole.ADMIN)
   getInternshipsByCompany(@GetUser() user: User): Promise<Internship[]> {
     return this.internshipService.getInternshipsByCompany(user);
   }
@@ -46,28 +48,29 @@ export class InternshipController {
 
   @Patch(':id')
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(UserRole.HR, UserRole.ADMIN)
+  @Roles(UserRole.HR, UserRole.ALUMNI, UserRole.ADMIN)
   updateInternship(
     @Param('id', ParseIntPipe) id: number,
-    @Body() updateInternshipDto: UpdateInternshipDto
+    @Body() updateInternshipDto: UpdateInternshipDto,
+    @GetUser() user: User,
   ): Promise<Internship> {
-    return this.internshipService.updateInternship(id, updateInternshipDto);
+    return this.internshipService.updateInternship(id, updateInternshipDto, user);
   }
 
 
 
   @Patch(':id/toggle-status')
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(UserRole.HR, UserRole.ADMIN)
-  toggleInternshipStatus(@Param('id', ParseIntPipe) id: number) {
-    return this.internshipService.toggleInternshipStatus(id);
+  @Roles(UserRole.HR, UserRole.ALUMNI, UserRole.ADMIN)
+  toggleInternshipStatus(@Param('id', ParseIntPipe) id: number, @GetUser() user: User) {
+    return this.internshipService.toggleInternshipStatus(id, user);
   }
 
 
   @Delete(':id')
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(UserRole.HR, UserRole.ADMIN)
-  deleteInternship(@Param('id', ParseIntPipe) id: number): Promise<string> {
-    return this.internshipService.deleteInternship(id);
+  @Roles(UserRole.HR, UserRole.ALUMNI, UserRole.ADMIN)
+  deleteInternship(@Param('id', ParseIntPipe) id: number, @GetUser() user: User): Promise<string> {
+    return this.internshipService.deleteInternship(id, user);
   }
 }

@@ -4,6 +4,7 @@ import { diskStorage } from 'multer';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { HrApprovalDto } from './dto/hr-approval.dto';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { UserRole } from './entities/user.entity';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
@@ -23,6 +24,8 @@ export class UsersController {
   }
 
   @Post()
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.ADMIN)
   @UseInterceptors(
     FileInterceptor('profilePicture', {
       storage: diskStorage({
@@ -71,29 +74,53 @@ export class UsersController {
   }
 
   @Patch('profile')
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(UserRole.ADMIN)
+  @UseGuards(JwtAuthGuard)
   updateProfile(@Req() req, @Body() updateUserDto: UpdateUserDto) {
-    return this.usersService.update(req.user.id, updateUserDto);
+    // Only the authenticated user's own ID (from the JWT) is used.
+    // Account role and password cannot be changed through the profile endpoint.
+    const {
+      role,
+      password,
+      companyName,
+      company,
+      currentCompany,
+      industry,
+      companyId,
+      ...safeData
+    } = updateUserDto;
+    return this.usersService.updateProfile(
+      req.user.id,
+      safeData,
+      companyId,
+      companyName ?? company ?? currentCompany,
+    );
   }
 
-<<<<<<< HEAD
-=======
-
->>>>>>> 7505de0 (Update for student)
   @Patch('change-password')
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(UserRole.ADMIN)
+  @UseGuards(JwtAuthGuard)
   changePassword(@Req() req, @Body() dto: { currentPassword: string; newPassword: string }) {
-<<<<<<< HEAD
-    return this.usersService.changePassword(req.user.id, dto.currentPassword, dto.newPassword);
-=======
     return this.usersService.changePassword(
       req.user.id,
       dto.currentPassword,
       dto.newPassword
     );
->>>>>>> 7505de0 (Update for student)
+  }
+
+  @Patch(':id/status')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.ADMIN)
+  toggleStatus(@Param('id', ParseIntPipe) id: number) {
+    return this.usersService.toggleStatus(id);
+  }
+
+  @Patch(':id/hr-approval')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.ADMIN)
+  setHrApproval(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() dto: HrApprovalDto,
+  ) {
+    return this.usersService.setHrApproval(id, dto.status);
   }
 
   @Patch(':id')
@@ -128,7 +155,8 @@ export class UsersController {
     if (file) {
       updateUserDto.profilePictureUrl = file.path;
     }
-    return this.usersService.update(id, updateUserDto);
+    const { company, currentCompany, ...safeUpdate } = updateUserDto;
+    return this.usersService.update(id, safeUpdate);
   }
 
   @Delete(':id')
@@ -137,11 +165,4 @@ export class UsersController {
   remove(@Param('id', ParseIntPipe) id: number) {
     return this.usersService.remove(id);
   }
-<<<<<<< HEAD
 }
-=======
-
-
-
-}
->>>>>>> 7505de0 (Update for student)
